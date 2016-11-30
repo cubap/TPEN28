@@ -27,6 +27,18 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.hp.hpl.jena.rdf.model.*;
+import edu.slu.tpen.entity.Image.Canvas;
+import edu.slu.tpen.servlet.Constant;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.owasp.esapi.ESAPI;
 
 
@@ -54,6 +66,88 @@ public class Transcription {
    private int width;
 
    private int lineID;
+   
+   public static Transcription[] getTranscription (Integer projectID, String canvasID, Integer UID, Integer folioNumber) throws IOException{
+        Stack<Transcription> orderedTranscriptions = new Stack();
+        String[] annolist_id_array = Canvas.getAnnotationListsForProject(projectID, canvasID, 0);
+        for(int i=0; i<annolist_id_array.length; i++){
+            URL postUrlannoLs = new URL(annolist_id_array[i]);
+            HttpURLConnection ucAnnoLs = (HttpURLConnection) postUrlannoLs.openConnection();
+            ucAnnoLs.setDoOutput(true);
+            ucAnnoLs.setRequestMethod("GET");
+            ucAnnoLs.setUseCaches(false);
+            ucAnnoLs.setInstanceFollowRedirects(true);
+            ucAnnoLs.addRequestProperty("content-type", "application/x-www-form-urlencoded");
+            ucAnnoLs.connect();
+            DataOutputStream dataOutAnnoLs = new DataOutputStream(ucAnnoLs.getOutputStream());
+            dataOutAnnoLs.flush();
+            dataOutAnnoLs.close();
+            BufferedReader readerAnnoLs = new BufferedReader(new InputStreamReader(ucAnnoLs.getInputStream(),"utf-8"));
+            String lineAnnoLs = "";
+            StringBuilder sbAnnoLs = new StringBuilder();
+    //                                System.out.println("=============================");  
+    //                                System.out.println("Contents of annotation list starts");  
+    //                                System.out.println("=============================");  
+            while ((lineAnnoLs = readerAnnoLs.readLine()) != null){
+    //                                    System.out.println(lineAnnoLs);
+                sbAnnoLs.append(lineAnnoLs);
+            }
+    //                                System.out.println("=============================");  
+    //                                System.out.println("Contents of annotation list ends");  
+    //                                System.out.println("=============================");
+            readerAnnoLs.close();
+            ucAnnoLs.disconnect();
+            //transfer annotation list string to annotation list JSON Array. 
+            JSONObject annotationList = new JSONObject();
+            String getAnnoResponse ="";
+            try{
+               getAnnoResponse = sbAnnoLs.toString();
+            }catch(Exception e){
+               getAnnoResponse = "[]";
+            }
+            annotationList = JSONObject.fromObject(getAnnoResponse); //This is the annotationList
+
+            JSONArray listResources = annotationList.getJSONArray("resources");
+            for(int j=0; j<listResources.size(); j++){
+                JSONObject annoLine = listResources.getJSONObject(j);
+                orderedTranscriptions.add(new Transcription(annoLine, UID, projectID, folioNumber));
+            }
+                    
+        }
+        Transcription[] toret = new Transcription[orderedTranscriptions.size()];
+        for (int i = 0; i < orderedTranscriptions.size(); i++) {
+           toret[i] = orderedTranscriptions.get(i);
+        }
+        return toret;
+   }
+   
+    public Transcription(JSONObject annoLine, int uid, int projectID, int folioNumber) throws MalformedURLException, IOException{
+        Integer folio = 0;
+        String id = "";
+        String onValue = annoLine.getString("on");
+        String XYWHpiece = onValue.substring(onValue.lastIndexOf("#"));
+        String[] XYWHArray = XYWHpiece.split(",");
+        JSONObject annoLineResource = annoLine.getJSONObject("resource");
+        String tpen_annoLineID = annoLine.getString("tpen_line_id");
+        String annoLineText = annoLineResource.getString("cnt:chars");
+        String id_string = annoLineResource.getString("@id");
+        id = id_string.substring(id_string.lastIndexOf("/"));
+        Date dateCreated = new Date(Long.valueOf(Long.valueOf(id.substring(0, 8), 16)+ "000"));
+        int tpen_line_number = Integer.parseInt(tpen_annoLineID.substring(tpen_annoLineID.lastIndexOf("/")));
+        
+        text = annoLineText;
+        /* TODO WE NEED TO GET COMMENTS FIXME */
+        comment = "";
+        UID = uid;
+        lineID = tpen_line_number;
+        x = Integer.parseInt(XYWHArray[0]);
+        y = Integer.parseInt(XYWHArray[1]);
+        width = Integer.parseInt(XYWHArray[2]);
+        height = Integer.parseInt(XYWHArray[3]);
+        this.projectID = projectID;
+        this.folio = folioNumber;
+        date = dateCreated;
+    }
 
    /**
     * @deprecated in favor of one including creator id Create a new Transcription bounding. The text will be

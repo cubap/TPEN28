@@ -4,6 +4,8 @@
     Author     : jim
 --%>
 
+<%@page import="textdisplay.Folio"%>
+<%@page import="edu.slu.tpen.entity.Image.Canvas"%>
 <%@page import="textdisplay.Transcription"%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="org.owasp.esapi.ESAPI" %>
@@ -11,6 +13,12 @@
    "http://www.w3.org/TR/html4/loose.dtd">
 <%
 int projectID=0;
+int UID=0;
+
+if (session.getAttribute("UID")!=null) {   
+    UID = Integer.parseInt(session.getAttribute("UID").toString());
+} 
+        
 if (request.getParameter("projectID")!=null){
     projectID = Integer.parseInt(request.getParameter("projectID"));
     textdisplay.Project p=new textdisplay.Project(projectID);
@@ -689,7 +697,9 @@ if (header.length()>0){
                 int folioLimit = (exportFolios.length>3) ? 3:exportFolios.length;   //prevent runaway previewing
                 for (int i=0;i<folioLimit;i++){
                     eachFolio = exportFolios[i];
-                    exportable = Transcription.getProjectTranscriptions(projectID, eachFolio.getFolioNumber());
+                    String canvasID = Folio.getRbTok("SERVERURL")+"canvas/"+eachFolio.getFolioNumber();
+                    exportable = Transcription.getTranscription(projectID, canvasID, UID, eachFolio.getFolioNumber());
+                    //exportable = Transcription.getProjectTranscriptions(projectID, eachFolio.getFolioNumber());
 //                    textdisplay.line[] columnCheck = p.getLines(eachFolio.getFolioNumber());
                     int numberOfLines = exportable.length;
                     int columnLineShift = 0;
