@@ -147,7 +147,7 @@
                         </div>
                         <div id="transcriptletArea" class="flex-wide">
                             <div class="xmlClosingTags"></div>
-                            
+
                         </div>
 
                         <div class="flex-bookend">
@@ -203,8 +203,8 @@
             </div>
         </div>
          <div id="parsingSplit" class="split" >
-                <div class="fullScreenTrans"><i class="fa fa-reply"></i> Full Screen Transcription</div>
-                <div class="toolLinks">
+             <div class="fullScreenTrans">⇥ Close Tool</div>
+             <div class="toolLinks">
                 <!-- tool buttons for parsing -->
                 </div>
 
@@ -260,7 +260,7 @@
                                             <label for="white"><input onclick='rulerColor("white");' id="white" type="radio" value="white" name="rulerColor"/>White</label>
                                             <label style="margin-left: 10px; margin-right: 3px;" for="customRuler">
                                                 Custom
-                                                <input style="width:80px;" title="Type the name of any valid HTML color or code. If the code is invalid, a default color will be shown." 
+                                                <input style="width:80px;" title="Type the name of any valid HTML color or code. If the code is invalid, a default color will be shown."
                                                 type="text" id="customRuler" onkeyup="rulerColor('custom');" placeholder="transparent" value="transparent"/>
                                             </label>
                                         </div>
@@ -291,8 +291,8 @@
 
 <!--                    Linebreaking Tool-->
            <div id="linebreakSplit" class="ui-widget ui-widget-content split">
-               <div class="fullScreenTrans"><i class="fa fa-reply"></i> Full Screen Transcription</div>
-                <h3>Linebreak Existing Transcription</h3>
+               <div class="fullScreenTrans">⇥ Close Tool</div>
+               <h3>Linebreak Existing Transcription</h3>
                 <div id="linebreakTextContainer">
                     <!-- visible if text is saved -->
            <div>
@@ -332,7 +332,7 @@ Begin by <a id="uploadText" class="btn btn-default">uploading some text</a> to l
 
                        </div>
             <div id="compareSplit" class="split">
-                    <div class="fullScreenTrans"><i class="fa fa-reply"></i> Full Screen Transcription</div>
+                <div class="fullScreenTrans">⇥ Close Tool</div>
                 <div class="toolLinks">
                     <select id="compareJump">
                         <option folioNum="0">Compare To</option>
@@ -395,7 +395,7 @@ Begin by <a id="uploadText" class="btn btn-default">uploading some text</a> to l
 
 </div>
             <div id="previewSplit" class="split">
-                    <div class="fullScreenTrans"><i class="fa fa-reply"></i> Full Screen Transcription</div>
+                <div class="fullScreenTrans">⇥ Close Tool</div>
                 <div class="toolLinks">
                     <button class="showMe2" onclick="restoreWorkspace();">Show Workspace</button>
                     <button class="hideMe" style="position: relative;" onclick="hideWorkspaceToSeeImage();" >Hide Workspace</button>
@@ -405,7 +405,7 @@ Begin by <a id="uploadText" class="btn btn-default">uploading some text</a> to l
                 </div>
             </div>
             <div id="fullPageSplit" class="split">
-                    <div class="fullScreenTrans"><i class="fa fa-reply"></i> Full Screen Transcription</div>
+                <div class="fullScreenTrans">⇥ Close Tool</div>
                 <div class="toolLinks">
                     <button class="showMe2" onclick="restoreWorkspace();">Show Workspace</button>
                     <button class="hideMe" style="position: relative;" onclick="hideWorkspaceToSeeImage();" >Hide Workspace</button>
@@ -1298,7 +1298,7 @@ Begin by <a id="uploadText" class="btn btn-default">uploading some text</a> to l
           var def = $("#"+ref);
           def.css('color','orangered');
       });
-      
+
         $(".exitPage").click(function(event) {
             var thisLink = $(this).attr("href");
             event.preventDefault();
@@ -1306,7 +1306,7 @@ Begin by <a id="uploadText" class="btn btn-default">uploading some text</a> to l
             $("body").ajaxStart(function() {
               $(this).addClass("ui-state-disabled");
             }).ajaxStop(function() {
-                //When the ajax finishes, you can leave. 
+                //When the ajax finishes, you can leave.
               if (thisLink.indexOf("?") != -1)
                 thisLink += "&tool=" + tpen.screen.liveTool;
                 Data.saveTranscription(thisLink);
@@ -1315,8 +1315,8 @@ Begin by <a id="uploadText" class="btn btn-default">uploading some text</a> to l
 //            if (leftovers != undefined)
 //              Linebreak.saveLeftovers(escape(leftovers));
         });
-      
-           
+
+
     });
 
     /* Allows users to slightly adjust a line within a column while within the transcription interface. */
