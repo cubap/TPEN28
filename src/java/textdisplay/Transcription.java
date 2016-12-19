@@ -68,6 +68,7 @@ public class Transcription {
    private int lineID;
    
    public static Transcription[] getTranscription (Integer projectID, String canvasID, Integer UID, Integer folioNumber) throws IOException{
+       System.out.println("Getting a transcription");
         Stack<Transcription> orderedTranscriptions = new Stack();
         String[] annolist_id_array = Canvas.getAnnotationListsForProject(projectID, canvasID, 0);
         for(int i=0; i<annolist_id_array.length; i++){
@@ -93,7 +94,7 @@ public class Transcription {
                 sbAnnoLs.append(lineAnnoLs);
             }
     //                                System.out.println("=============================");  
-    //                                System.out.println("Contents of annotation list ends");  
+                                    System.out.println("Contents of annotation list ends");  
     //                                System.out.println("=============================");
             readerAnnoLs.close();
             ucAnnoLs.disconnect();
@@ -106,27 +107,29 @@ public class Transcription {
                getAnnoResponse = "[]";
             }
             annotationList = JSONObject.fromObject(getAnnoResponse); //This is the annotationList
-
             JSONArray listResources = annotationList.getJSONArray("resources");
             for(int j=0; j<listResources.size(); j++){
                 JSONObject annoLine = listResources.getJSONObject(j);
                 orderedTranscriptions.add(new Transcription(annoLine, UID, projectID, folioNumber));
             }
-                    
         }
         Transcription[] toret = new Transcription[orderedTranscriptions.size()];
         for (int i = 0; i < orderedTranscriptions.size(); i++) {
+           System.out.println("Do i have a proper item from public Transcription()?");
+           System.out.println(orderedTranscriptions.get(i));
            toret[i] = orderedTranscriptions.get(i);
         }
         return toret;
    }
    
     public Transcription(JSONObject annoLine, int uid, int projectID, int folioNumber) throws MalformedURLException, IOException{
+        System.out.println("Making the actual transcription object, below are the pieces:");
         Integer folio = 0;
         String id = "";
         String onValue = annoLine.getString("on");
         String XYWHpiece = onValue.substring(onValue.lastIndexOf("#"));
         String[] XYWHArray = XYWHpiece.split(",");
+        String line_comment = annoLine.getString("_tpen_note");
         JSONObject annoLineResource = annoLine.getJSONObject("resource");
         String tpen_annoLineID = annoLine.getString("tpen_line_id");
         String annoLineText = annoLineResource.getString("cnt:chars");
@@ -135,9 +138,21 @@ public class Transcription {
         Date dateCreated = new Date(Long.valueOf(Long.valueOf(id.substring(0, 8), 16)+ "000"));
         int tpen_line_number = Integer.parseInt(tpen_annoLineID.substring(tpen_annoLineID.lastIndexOf("/")));
         
+        System.out.println(annoLineText);
+        System.out.println(line_comment);
+        System.out.println(uid);
+        System.out.println(tpen_line_number);
+        System.out.println(Integer.parseInt(XYWHArray[0]));
+        System.out.println(Integer.parseInt(XYWHArray[1]));
+        System.out.println(Integer.parseInt(XYWHArray[2]));
+        System.out.println(Integer.parseInt(XYWHArray[3]));
+        System.out.println(projectID);
+        System.out.println(folioNumber);
+        System.out.println(dateCreated);
+        
         text = annoLineText;
         /* TODO WE NEED TO GET COMMENTS FIXME */
-        comment = "";
+        comment = line_comment;
         UID = uid;
         lineID = tpen_line_number;
         x = Integer.parseInt(XYWHArray[0]);

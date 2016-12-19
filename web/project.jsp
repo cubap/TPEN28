@@ -842,7 +842,7 @@
                     </div>
                     <%if (isMember || permitExport){%>
                         <div id="tabs-5">
-                        <form action="export" method="get" onsubmit="return Export.validForm();">
+                        <form action="export" method="get" onsubmit="return validForm();">
                             <ul id="export" class="ui-helper-reset">
                                 <li class="left ui-widget-content ui-corner-tr ui-corner-bl tall">
                                     <button class="ui-state-default ui-button listBegin left" type="submit" value="Download File"><span class="ui-icon ui-icon-disk right"></span>Download File</button>

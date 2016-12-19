@@ -540,6 +540,15 @@ public class Manuscript {
          }
       }
    }
+   
+   /**
+    * Get the full transcription as a single string
+    * @TPEN 2.8 redux
+    */
+    public static String getFullTranscription(Project p, TagFilter.noteStyles includeNotes, Boolean newLine, Boolean pageLabels, Boolean imageWrap) throws SQLException {
+        
+        return "";
+    }
 
    /**
     * Get the full transcription as a single string
@@ -621,9 +630,19 @@ public class Manuscript {
          DatabaseWrapper.closePreparedStatement(ps);
       }
    }
+   
+   /**
+    * Get the full transcription as a single string
+    * @2.8 redux
+    */
+   public static String getPartialTranscription(Project p, TagFilter.noteStyles includeNotes, Boolean newLine, Boolean pageLabels, int beginFolio, int endFolio) throws SQLException {
+       
+       return "";
+   }
 
    /**
     * Get the full transcription as a single string
+    * @deprecated
     */
    public static String getPartialDocument(Project p, TagFilter.noteStyles includeNotes, Boolean newLine, Boolean pageLabels, int beginFolio, int endFolio) throws SQLException {
       Boolean inRange = false;

@@ -5119,6 +5119,18 @@ tpen.screen.peekZoom = function(cancel){
             tpen.screen.textSize();
         };
     }
+    
+    /* I believe this was export.validForm() */
+    function validForm(){
+            var firstFolio = $("#beginFolio").children("option:selected").index();
+            var lastFolio = $("#endFolio").children("option:selected").index();
+            if (firstFolio <= lastFolio) {
+                return true;
+            } else {
+                alert("The "+ordinal(firstFolio+1)+" page comes after the "+ordinal(lastFolio+1)+" page in this project.\nPlease check your page range.");
+                return false;
+            }
+        }
 
 
 // Shim console.log to avoid blowing up browsers without it - daQuoi?

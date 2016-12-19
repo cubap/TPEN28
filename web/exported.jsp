@@ -674,6 +674,7 @@
                     </div><%
                         continue;
                     } 
+                    System.out.println("Getting transcription in exported.jsp");
                     exportable = Transcription.getProjectTranscriptions(projectID, eachFolio.getFolioNumber());
                     int numberOfLines = exportable.length;
                     int columnLineShift = 0;

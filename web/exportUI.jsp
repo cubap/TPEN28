@@ -276,16 +276,7 @@ if (request.getParameter("projectID")!=null){
             XML.prep();
             $("#formatXML").find("input[name^='stripTag']").change();
         });
-        function validForm(){
-            var firstFolio = $("#beginFolio").children("option:selected").index();
-            var lastFolio = $("#endFolio").children("option:selected").index();
-            if (firstFolio <= lastFolio) {
-                return true;
-            } else {
-                alert("The "+ordinal(firstFolio+1)+" page comes after the "+ordinal(lastFolio+1)+" page in this project.\nPlease check your page range.");
-                return false;
-            }
-        }
+        
         function ordinal(n) {
             if (10 < n && n < 14) return n + 'th';
             switch (n % 10) {
@@ -695,6 +686,7 @@ if (header.length()>0){
                 textdisplay.Folio eachFolio;
                 textdisplay.Folio[] exportFolios = p.getFolios();
                 int folioLimit = (exportFolios.length>3) ? 3:exportFolios.length;   //prevent runaway previewing
+                System.out.println("getting transcriptions in exportUI.jsp");
                 for (int i=0;i<folioLimit;i++){
                     eachFolio = exportFolios[i];
                     String canvasID = Folio.getRbTok("SERVERURL")+"canvas/"+eachFolio.getFolioNumber();
