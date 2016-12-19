@@ -14,6 +14,7 @@
  */
 package textdisplay;
 
+import edu.slu.tpen.entity.Image.Canvas;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,6 +25,13 @@ import java.util.logging.Logger;
 import javax.mail.MessagingException;
 import org.owasp.esapi.ESAPI;
 import static edu.slu.util.ServletUtils.getDBConnection;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import user.User;
 
 
@@ -546,8 +554,125 @@ public class Manuscript {
     * @TPEN 2.8 redux
     */
     public static String getFullTranscription(Project p, TagFilter.noteStyles includeNotes, Boolean newLine, Boolean pageLabels, Boolean imageWrap) throws SQLException {
+        System.out.println("Getting a transcription");
+        Transcription[] orderedTranscriptions = new Transcription[orderedTranscriptions.size()];
+        Stack<Transcription> orderedTranscriptionsStack = new Stack();
+        String[] annolist_id_array = Canvas.getAnnotationListsForProject(projectID, canvasID, 0);
+        String toret = "";
+
+      Connection j = null;
+      PreparedStatement ps = null;
+
+      try {
+          for(int i=0; i<annolist_id_array.length; i++){
+            URL postUrlannoLs = new URL(annolist_id_array[i]);
+            HttpURLConnection ucAnnoLs = (HttpURLConnection) postUrlannoLs.openConnection();
+            ucAnnoLs.setDoOutput(true);
+            ucAnnoLs.setRequestMethod("GET");
+            ucAnnoLs.setUseCaches(false);
+            ucAnnoLs.setInstanceFollowRedirects(true);
+            ucAnnoLs.addRequestProperty("content-type", "application/x-www-form-urlencoded");
+            ucAnnoLs.connect();
+            DataOutputStream dataOutAnnoLs = new DataOutputStream(ucAnnoLs.getOutputStream());
+            dataOutAnnoLs.flush();
+            dataOutAnnoLs.close();
+            BufferedReader readerAnnoLs = new BufferedReader(new InputStreamReader(ucAnnoLs.getInputStream(),"utf-8"));
+            String lineAnnoLs = "";
+            StringBuilder sbAnnoLs = new StringBuilder();
+    //                                System.out.println("=============================");  
+    //                                System.out.println("Contents of annotation list starts");  
+    //                                System.out.println("=============================");  
+            while ((lineAnnoLs = readerAnnoLs.readLine()) != null){
+    //                                    System.out.println(lineAnnoLs);
+                sbAnnoLs.append(lineAnnoLs);
+            }
+    //                                System.out.println("=============================");  
+                                    System.out.println("Contents of annotation list ends");  
+    //                                System.out.println("=============================");
+            readerAnnoLs.close();
+            ucAnnoLs.disconnect();
+            //transfer annotation list string to annotation list JSON Array. 
+            JSONObject annotationList = new JSONObject();
+            String getAnnoResponse ="";
+            try{
+               getAnnoResponse = sbAnnoLs.toString();
+            }catch(Exception e){
+               getAnnoResponse = "[]";
+            }
+            annotationList = JSONObject.fromObject(getAnnoResponse); //This is the annotationList
+            JSONArray listResources = annotationList.getJSONArray("resources");
+            for(int l=0; l<listResources.size(); l++){
+                JSONObject annoLine = listResources.getJSONObject(l);
+                orderedTranscriptionsStack.add(new Transcription(annoLine, UID, projectID, folioNumber));
+            }
+            
+        }
+         int oldfolio = -1;
+         int note_ctr = 1;
+         String endNotes = "\n";
+         for(int k=0; k<orderedTranscriptionsStack.size(); k++){
+            Transcription annoLine = orderedTranscriptionsStack[k];
+            if (pageLabels && rs.getInt("transcription.folio") != oldfolio) {
+
+               oldfolio = rs.getInt("transcription.folio");
+               toret += "[" + new Folio(oldfolio).getPageName() + "]\n";
+
+            }
+            if (imageWrap && rs.getInt("transcription.folio") != oldfolio) {
+               oldfolio = rs.getInt("transcription.folio");
+               toret += "<TPENimage name=\"" + ESAPI.encoder().encodeForXML(ESAPI.encoder().decodeForHTML(new Folio(oldfolio).getPageName())) + "\" ";
+               if (new Folio(oldfolio).getImageURL().contains("t-pen")) {
+                  toret += " url=\"\"/>";
+               } else {
+                  toret += " url=\"" + ESAPI.encoder().encodeForXML(new Folio(oldfolio).getImageURL()) + "\"/>";
+               }
+            }
+            String tmp = rs.getString(1);
+            if (tmp.length() != 0) {
+               if (tmp.endsWith(p.linebreakSymbol)) {
+                  tmp = tmp.substring(0, tmp.length() - p.linebreakSymbol.length());
+               } else {
+                  if (!tmp.endsWith(" ")) {
+                     tmp = tmp + " ";
+                  }
+               }
+               if (newLine) {
+                  toret += tmp + "\n";
+               } else {
+                  toret += tmp;
+               }
+               if (!(includeNotes == TagFilter.noteStyles.remove) && !(includeNotes == TagFilter.noteStyles.endnote) && rs.getString(2).trim().length() > 0 && rs.getString(2).compareTo(" ") != 0 && rs.getString(2).compareTo("null") != 0) {
+                  if (toret.endsWith("\n")) {
+                     toret += "<tpen_note>" + rs.getString(2) + "</tpen_note>\n";
+                  } else {
+                     toret += "\n<tpen_note>" + rs.getString(2) + "</tpen_note>\n";
+                  }
+               }
+               if ((includeNotes == TagFilter.noteStyles.endnote) && rs.getString(2).trim().length() > 0 && rs.getString(2).compareTo(" ") != 0 && rs.getString(2).compareTo("null") != 0) {
+                  if (toret.charAt(toret.length() - 1) == ' ') {
+                     toret = toret.substring(0, toret.length() - 1);
+                     toret += "<tpen_note>" + note_ctr + "</tpen_note> ";
+                  }
+                  if (toret.charAt(toret.length() - 1) == '\n') {
+                     toret = toret.substring(0, toret.length() - 1);
+                     toret += "<tpen_note>" + note_ctr + "</tpen_note>\n";
+                  }
+
+                  endNotes += note_ctr + " " + rs.getString(2) + "\n";
+                  note_ctr++;
+
+               }
+
+            }
+            orderedTranscriptionsStack.add(new Transcription(annoLine, UID, projectID, folioNumber));
+        }
+
+         return toret + endNotes;
+      } finally {
+         DatabaseWrapper.closeDBConnection(j);
+         DatabaseWrapper.closePreparedStatement(ps);
+      }
         
-        return "";
     }
 
    /**
