@@ -52,6 +52,8 @@ import com.google.gson.Gson;
 import edu.slu.tpen.transfer.JsonImporter;
 import edu.slu.tpen.transfer.JsonLDExporter;
 import java.io.OutputStreamWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 
@@ -73,11 +75,16 @@ public class GetProjectTPENServlet extends HttpServlet {
    @Override
    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int uid = getUID(request, response);
-        
+        User user = null;
+        try {
+            user = new User(uid);
+        } catch (SQLException ex) {
+            Logger.getLogger(GetProjectTPENServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
         HttpSession session = request.getSession();
         boolean isTPENAdmin = false;
         try {
-            isTPENAdmin = (new User(uid)).isAdmin();
+            isTPENAdmin = user.isAdmin();
         } 
         catch (SQLException e) {
                 e.printStackTrace();
@@ -104,6 +111,7 @@ public class GetProjectTPENServlet extends HttpServlet {
                     ProjectPermissions pms = new ProjectPermissions(proj.getProjectID());
                     System.out.println("2");
                     jsonMap.put("projper", gson.toJson(pms));
+                    
 //                    System.out.println("Parameter test to receive project data / manifest");
 //                    System.out.println("group Id ===== " + proj.getGroupID() + " is member " + group.isMember(uid));
 //                    System.out.println("this is a tpen admin? "+isTPENAdmin);
@@ -117,17 +125,29 @@ public class GetProjectTPENServlet extends HttpServlet {
                             Folio[] folios = proj.getFolios();
                             JSONArray folios_array = JSONArray.fromObject(gson.toJson(folios));
                             JSONObject folio_obj = null;
+                            //TODO need to get the ipr agreement status for the archive of this folio for this user 
+                            
                             for(int x=0; x<folios.length; x++){
                                 Integer folioNum = folios[x].getFolioNumber();
                                 Manuscript forThisFolio = new Manuscript(folioNum);
                                 int manID = forThisFolio.getID(); 
                                 User controller = forThisFolio.getControllingUser();
                                 String controllerName = "public project";
+                                String archive = folios[x].getArchive();
+                                String ipr_agreement = folios[x].getIPRAgreement();
                                 if(null != controller){
                                     controllerName = controller.getUname();
                                 }
                                 folio_obj = folios_array.getJSONObject(x);
                                 folio_obj.element("manuscript", manID);
+                                folio_obj.element("archive", archive);
+                                folio_obj.element("ipr_agreement", ipr_agreement);
+                                if(user.getUname().equals(controllerName) || forThisFolio.isRestricted()){ //
+                                    folio_obj.element("ipr", true); //should be true in this case because the check needs to pass
+                                }
+                                else{
+                                    folio_obj.element("ipr", user.hasAcceptedIPR(folioNum));
+                                }
                                 folios_array.set(x, folio_obj);
                                 JSONObject for_the_array = new JSONObject();
                                 for_the_array.element("manID", Integer.toString(manID));
@@ -136,7 +156,7 @@ public class GetProjectTPENServlet extends HttpServlet {
                                 if(!manuscripts_in_project.contains(manID)){
                                     //Then this manuscript is accounted for.
                                     manuscripts_in_project.add(manID);
-                                    User currentUser = new User(uid);
+                                    User currentUser = user;
                                     System.out.println("Is the current user authorized?");
                                     System.out.println(forThisFolio.isAuthorized(currentUser));
                                     if(forThisFolio.isRestricted()){
@@ -161,7 +181,7 @@ public class GetProjectTPENServlet extends HttpServlet {
                             System.out.println("21");
 //                            System.out.println("folios json ========== " + gson.toJson(folios));
                             JSONObject manifest = new JSONObject();                            
-                            manifest_obj_str = new JsonLDExporter(proj, new User(uid)).export();
+                            manifest_obj_str = new JsonLDExporter(proj, user).export();
                             System.out.println("5");
                            // }
                             try{ //Try to parse the manifest string
@@ -178,7 +198,11 @@ public class GetProjectTPENServlet extends HttpServlet {
                             String header = proj.getHeader();
                             jsonMap.put("ph", header);
                             System.out.println("7");
-//                            System.out.println("header json ======= " + gson.toJson(header));
+                            
+                            String linebreakRemainingText = proj.getLinebreakText();
+                            jsonMap.put("remainingText", linebreakRemainingText);
+                             System.out.println("LB");
+                            //                            System.out.println("header json ======= " + gson.toJson(header));
                             //get group members
                             User[] users = group.getMembers();
                             jsonMap.put("ls_u", gson.toJson(users));
@@ -198,7 +222,7 @@ public class GetProjectTPENServlet extends HttpServlet {
                             Object role = session.getAttribute("role");
                             if (!isLeader) {
                                 if (role != null && role.toString().equals("1")) {
-                                    User currentUser = new User(uid);
+                                    User currentUser = user;
                                     ArrayList<User> leaderList = new ArrayList<User>(Arrays.asList(leaders));
                                     leaderList.add(currentUser);
                                     leaders = leaderList.toArray(new User[leaderList.size()]);

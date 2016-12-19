@@ -158,22 +158,23 @@ public class CopyProjectAndAnnos extends HttpServlet {
                                       lineAnnot.put("@type", "oa:Annotation");
                                       lineAnnot.put("motivation", "oad:transcribing"); 
                                       lineAnnot.put("resource", buildQuickMap("@type", "cnt:ContentAsText", "cnt:chars", ESAPI.encoder().decodeForHTML(rs.getString("text"))));
-
                                       lineAnnot.put("on", String.format("%s#xywh=%d,%d,%d,%d", canvasID, rs.getInt("x"), rs.getInt("y"), rs.getInt("width"), rs.getInt("height"))); 
                                       lineAnnot.put("testing", "msid_creation");
                                       resources_list.add(lineAnnot);
-
                                       String note = rs.getString("comment");
-                                      if (StringUtils.isNotBlank(note)) {
-                                         Map<String, Object> noteAnnot = new LinkedHashMap<>();
-                                         //noteAnnot.put("@id", projName + "/note/" + lineID);
-                                         noteAnnot.put("@type", "oa:Annotation");
-                                         noteAnnot.put("motivation", "oa:commenting");
-                                         noteAnnot.put("resource", buildQuickMap("@type", "cnt:ContentAsText", "cnt:chars", note));
-                                         noteAnnot.put("on", lineURI); //TODO: should this be on an @id of an annotation? If so, that complicates how i want to do the bulk.
-                                         noteAnnot.put("testing", "msid_creation");
-                                         resources_list.add(noteAnnot);
-                                      }
+                                      lineAnnot.put("_tpen_note",note);
+                                      int creatorID = rs.getInt("creator");
+                                      lineAnnot.put("_tpen_creator",creatorID);
+//                                      if (StringUtils.isNotBlank(note)) { //could make the note an annotation...
+//                                         Map<String, Object> noteAnnot = new LinkedHashMap<>();
+//                                         //noteAnnot.put("@id", projName + "/note/" + lineID);
+//                                         noteAnnot.put("@type", "oa:Annotation");
+//                                         noteAnnot.put("motivation", "oa:commenting");
+//                                         noteAnnot.put("resource", buildQuickMap("@type", "cnt:ContentAsText", "cnt:chars", note));
+//                                         noteAnnot.put("on", lineURI); //TODO: should this be on an @id of an annotation? If so, that complicates how i want to do the bulk.
+//                                         noteAnnot.put("testing", "msid_creation");
+//                                         resources_list.add(noteAnnot);
+//                                      }
                                    }
                                    
                                 }

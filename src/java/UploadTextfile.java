@@ -71,7 +71,7 @@ public class UploadTextfile extends HttpServlet {
     }
     textData=b.toString();
     thisProject.setLinebreakText(textData);
-    response.sendRedirect("transcription.jsp"+location);
+    response.sendRedirect("transcription.html"+location);
     return;
 
     }

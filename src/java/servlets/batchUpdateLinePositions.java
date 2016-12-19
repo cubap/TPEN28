@@ -42,7 +42,7 @@ public class batchUpdateLinePositions extends HttpServlet {
         try {
             if(request.getParameter("lineID")!=null)
             {
-                int lineID=Integer.parseInt(request.getParameter("lineID"));
+                String lineID = request.getParameter("lineID");
                 if(request.getParameter("newwidth")!=null)
                 {
                     int newWidth=Integer.parseInt(request.getParameter("newwidth"));

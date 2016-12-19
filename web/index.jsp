@@ -725,18 +725,10 @@ $(window).load(function(){gapi.plusone.go();});
     %>
     <script type="text/javascript">
         $(function(){
-            var sPageURL = decodeURIComponent(window.location.search.substring(1)),
-                sURLVariables = sPageURL.split('&'),
-                sParameterName,
-                i;
-
-            for (i = 0; i < sURLVariables.length; i++) {
-                sParameterName = sURLVariables[i].split('=');
-
-                if (sParameterName[0] === "ref") {
-                    sParameterName.shift(); // drop "ref"
-                    window.location.href = sParameterName.join("="); // put back "=" for ref URL
-                }
+            // Uses the ref parameter as a redirect for login requests.
+            var sPageURL = decodeURIComponent(window.location.search.substring(1));
+            if(sPageURL.startsWith("ref=")){
+                window.location.href = sPageURL.substring(4);
             }
         });
     </script>

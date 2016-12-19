@@ -219,6 +219,14 @@
         <servlet-name>FolioReport</servlet-name>
         <servlet-class>edu.slu.tpen.servlet.FolioReport</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>BulkUpdateAnnos</servlet-name>
+        <servlet-class>edu.slu.tpen.servlet.BulkUpdateAnnos</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AcceptIPRServlet</servlet-name>
+        <servlet-class>edu.slu.tpen.servlet.AcceptIPRServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>imageResize</servlet-name>
         <url-pattern>/imageResize</url-pattern>
@@ -633,6 +641,14 @@
     <servlet-mapping>
         <servlet-name>SaveNewProjectXML</servlet-name>
         <url-pattern>/saveNewProjectXML</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>BulkUpdateAnnos</servlet-name>
+        <url-pattern>/bulkUpdateAnnos</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AcceptIPRServlet</servlet-name>
+        <url-pattern>/acceptIPR</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>3000</session-timeout>

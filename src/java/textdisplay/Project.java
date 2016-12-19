@@ -904,6 +904,7 @@ public class Project {
       String query = "select remainingText  from linebreakingtext where projectID=?";
       Connection j = null;
       PreparedStatement ps = null;
+      System.out.println("Get linebreaking text for "+projectID+"!");
       try {
          j = DatabaseWrapper.getConnection();
          ps = j.prepareStatement(query);
@@ -914,8 +915,11 @@ public class Project {
             if (toret.length() > this.linebreakCharacterLimit) {
                return ESAPI.encoder().encodeForHTML(toret.substring(0, this.linebreakCharacterLimit));
             }
+            System.out.println("Found linebreaking text!");
+            System.out.println(toret);
             return toret;
          } else {
+             System.out.println("No linebreaking text found");
             return "";
          }
       } finally {

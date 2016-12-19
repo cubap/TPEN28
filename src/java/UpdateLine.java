@@ -72,7 +72,7 @@ public class UpdateLine extends HttpServlet {
 
             if (request.getParameter("projectID") != null) {
                 int projectID = Integer.parseInt(request.getParameter("projectID"));
-                int line = Integer.parseInt(request.getParameter("line"));
+                String line = request.getParameter("line");
                 try {
                     Project thisProject = new Project(projectID);
                     if (new Group(thisProject.getGroupID()).isMember(uid)) {
@@ -95,9 +95,7 @@ public class UpdateLine extends HttpServlet {
             }
             else
             {
-                int line = Integer.parseInt(request.getParameter("line"));
-
-
+                String line = request.getParameter("line");
                         Transcription t;
                 try {
                     t = new Transcription(line);

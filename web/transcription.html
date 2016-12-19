@@ -5,11 +5,6 @@
         <title>T-PEN Transcription</title>
         <link type="text/css" href="css/custom-theme/jQuery.css" rel="Stylesheet" />
         <link type="text/css" href="css/transcribeSkin.css" rel="Stylesheet" />
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.js"></script>
-        <script type="text/javascript" src="js/transcribe.js"></script>
-        <script src="https://use.fontawesome.com/4ae676603d.js"></script>
-    </head>
     <style>
         p{
             padding: 0px 10px;
@@ -53,13 +48,14 @@
 
 
     </style>
+    </head>
     <body>
         <div class="pageTurnCover">
             <div class="turnMsg">Please wait while we load the page...</div>
             <div class="turnLoader"><img src="images/loading2.gif" /></div>
         </div>
         <div class="magnifyHelp">
-            <div id='magnifyHlpLabel'>Magnify Help</div>
+            <div id='magnifyHlpLabel'>Inspect Help</div>
             <button style='margin-bottom: 3px;' class='nohover'>esc</button><span>   to quit</span><br>
             <button style='margin-bottom: 3px;' class='nohover'>+</button><span>   or mouse wheel to zoom in</span><br>
             <button class='nohover'>-</button><span>   or mouse wheel to zoom out</span>
@@ -67,25 +63,35 @@
         <div class="topTrim navigation">
             <span class="trimSection"><span id="trimTitle"></span>
             </span>
-            <span class="trimSection"><span id="trimPage"></span>
+            <span class="trimSection">
+                <span id="trimPage"></span>
+                <a class="exitPage" id="prevCanvas" onclick="previousFolio();" title="Previous Page">
+                    <i class="fa fa-caret-left fa-2x"></i>
+                </a>
                 <select id="pageJump">
                     <option id="activePage" folioNum="0">Jump to Page</option>
                 </select>
+                <a class="exitPage" id="nextCanvas" title="Next Page" onclick="nextFolio();">
+                    <i class="fa fa-caret-right fa-2x"></i>
+                </a>
             </span>
             <span class="trimSection">Transcribing as <span id="trimCurrentUser"></span></span>
             <div style="position:absolute;right:0;top:0;z-index: 1;">
                 <span class="trimSection">
-                    <a class="exitPage wBtn ui-state-default ui-button" title="T-PEN Home" href="index.jsp"><span class="left fa fa-home"></span>T-PEN Home</a>
-                <a class="exitPage wBtn ui-state-default ui-button" title="My Projects" href="project.jsp">My&nbsp;Projects</a>
-            </span>
+                    <a class="exitPage wBtn ui-state-default ui-button" title="T-PEN Home" href="index.jsp"><span class="fa fa-home"></span>T-PEN Home</a>
+                    <a class="exitPage wBtn ui-state-default ui-button" title="My Projects" href="project.jsp">My&nbsp;Projects</a>
+                </span>
                 <span class="trimSection">
                     <a id="helpContact" href="admin.jsp#aboutTab" target="_blank" class="wBtn ui-state-default ui-button">Contact <span class="fa fa-comment"></span></a>
+                </span>
+                <span class="trimSection">
+                    <a id="helpMe" onclick="Help.revealHelp();" class="ui-state-default ui-button">Help<i class="fa fa-question" style="margin-left:8px" aria-hidden="true"></i></a>
                 </span>
             </div>
         </div>
 
         <div class="instructions">
-            <!-- TODO: Are we logged in to see this? -->
+            <!-- TODO: Arc we logged in to see this? -->
             <p>
                 The area below accepts a local project ID number, a project or IIIF manifest url, or a valid T-PEN or IIIF manifest JSON object as valid input.
             </p>
@@ -104,6 +110,7 @@
             <div class="turnLoader transLoader"><img src="images/loading2.gif" /></div>
         </div>
         <div id="transcriptionTemplate">
+            <div id="templateResizeBar"></div>
             <div id="parsingCover"></div>
             <div id="transcriptionCanvas">
                 <div id="noLineWarning">
@@ -118,58 +125,86 @@
                 <div id="transWorkspace">
                     <div title="Slide Workspace" class="workspaceHandle slideHandleLeft"><i class="fa fa-bars"></i><i class="fa fa-arrows-v"></i></div><div title="Slide Workspace" class="workspaceHandle slideHandleRight"><i class="fa fa-arrows-v"></i><i class="fa fa-bars"></i></div>
                     <div class="flex-container flex-stretch">
+                        <div class="flex-bookend"></div>
+                        <div class="flex-stretch">
+                            <div title="Previous Line" id="prevColLine"></div>
+                        </div>
                         <div id="captions" class="flex-wide">
-                            <div id="captionsColLine"></div>
                             <div id="captionsText"></div>
+                        </div>
+                        <div class="flex-bookend">
+                            <div id="saveReport" class="ui-corner-top"></div>
                         </div>
                     </div>
                     <div class="flex-container flex-stretch">
-                        <div id="pageControls" class="flex-bookend">
-                            <div id="pageLabel">Page</div>
-                            <button id="prevCanvas" onclick="previousFolio();" title="Previous Page">prev</button>
-                            <button id="nextCanvas" title="Next Page" onclick="nextFolio();">next</button>
+                        <div class="flex-bookend">
+                            <button id="prevLine" title="Previous Line" onclick="previousTranscriptlet();">
+                                <i class="fa fa-chevron-left fa-2x"></i><br>
+                                Previous Line
+                            </button>
+                            <button id="prevPage" title="Previous Page" onclick="previousFolio();">
+                                <i class="fa fa-backward fa-2x"></i><br>
+                                Previous Page
+                            </button>
                         </div>
-                        <div id="transcriptletArea" class="flex-wide"></div>
-                        <div id="colLineWrapper" class="flex-stretch">
+                        <div class="flex-stretch">
                             <div title="Current Line" id="currentColLine"></div>
-                            <div title="Previous Line" id="prevColLine"></div>
+                            <button id='toggleNotes' role="button" onclick="$('.notes').fadeToggle('slow')" title='Toggle Notes'>
+                                <i class="fa fa-comment"></i>
+                            </button>
                         </div>
-                        <div id="lineControls" class="flex-bookend">
-                            <div id="lineLabel">Line</div>
-                            <button id="prevLine" title="Previous Line" onclick="previousTranscriptlet();">prev</button><button id="nextLine" title="Next Line" onclick="nextTranscriptlet();">next</button>
+                        <div id="transcriptletArea" class="flex-wide">
+                            <div class="xmlClosingTags"></div>
+
+                        </div>
+
+                        <div class="flex-bookend">
+                            <button id="nextLine" title="Next Line" onclick="nextTranscriptlet();">
+                                <i class="fa fa-chevron-right fa-2x"></i><br>
+                                Next Line
+                            </button>
+                            <button id="nextPage" title="Next Page" onclick="nextFolio();">
+                                <i class="fa fa-forward fa-2x"></i><br>
+                                Next Page
+                            </button>
                         </div>
                     </div>
-                    <div class="bottomButtons">
-
-<!--                        <select id="charactersPopin" class="specialCharacters"  title="Special Characters" >
-                            <option id="activeCharacters" >Characters</option>
-                        </select>
-                        <select id="xmlTagPopin" class="xmlTags" title="Custom XML Tags">
-                            <option id="activeTags">XML Tags</option>
-                        </select>-->
-                        <!-- add the tools to this area -->
+                    <div class="flex-container flex-stretch buttons">
                         <select id="splitScreenTools" >
-                            <option style="display:block;" splitter='default' class="splitTool" >Tools Available</option>
-                            <option splitter='preview' class="splitTool" >Text Preview</option>
-                            <option splitter='fullPage' class="splitTool"  >View Full Page</option>
-                            <option splitter='compare' class="splitTool" >Compare Page</option>
-                            <option splitter='linebreak' class="splitTool" >Linebreaking</option>
-                            <option splitter='abbreviation' class="splitTool"  >Capelli Abbreviation</option>
+                            <option selected>Splitscreen Tools</option>
                         </select>
+                        <button id="canvasControls" title="Page Tools" onclick="splitPage(event,'controls');">
+                            <i class="fa fa-file-image-o"></i>
+                            Page Tools</button>
+                        <button id="magnify1" class="magnifyBtn" magnifyImg="trans" title="Inspect Transcription Image" >
+                            <i class="fa fa-search-plus"></i>
+                            Inspect</button> <!--Page event on the listener for this class in js.-->
+                        <button id="toggleChars" title="Move Transcription Image" onclick="toggleSpecialChars(event);">
+                            <i class="fa fa-keyboard-o"></i>
+                            Characters</button>
+                        <button id="toggleXML" title="Move Transcription Image" onclick="toggleXMLTags(event);">
+                            <i class="fa fa-code"></i>
+                            XML Tags</button>
                     </div>
-                    <!--                <div class="bottomButtons" style="width: 201px; top:-4px;">
-
-                                    </div>-->
-                    <div class="bottomButtons">
-                        <button id="toggleChars" title="Move Transcription Image" onclick="toggleSpecialChars(event);">Characters</button>
-                        <button id="toggleXML" title="Move Transcription Image" onclick="toggleXMLTags(event);">XML Tags</button>
-                        <button id="activeImageTool" onclick="toggleImgTools(event);" >Image Tools</button> <!--  -->
-                        <button id="magnify1" class="magnifyBtn" magnifyImg="trans" title="Magnify Transcription Image" >Magnify</button> <!--Page event on the listener for this class in js.-->
-                        <button id="moveImage" title="Move Transcription Image" onclick="startMoveImg();">Move Img</button>
-                        <button id="parsingBtn" title="Correct Page Parsing" >Correct Parsing</button> <!--Page event on the listener for this class in js.-->
-                        <!--<button id="linebreakBtn">Linebreak</button>-->
-                        <button id="lineControlBtn" onclick="toggleLineControls(event);" title="View Line Controls" >Line Controls</button>
-
+                    <div id="specialCharsFloat" class="flex-container flex-stretch specialCharactered">
+                        <a title="Edit Special Characters" class="pull-left lookLikeButtons editButtons exitPage" href="buttons.jsp">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        <div class="closeBtn" onclick="$('#toggleChars').click();">
+                            <i class="fa fa-close"></i>
+                        </div>
+                        <div id="charactersPopin" class="specialCharacters"  title="Special Characters" >
+                        </div>
+                    </div>
+                    <div id="xmlTagFloat" class="flex-container flex-stretch xmlTagged">
+                        <a title="Edit XML Tags" class="pull-left lookLikeButtons editXMLs exitPage" href="buttons.jsp">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        <div class="closeBtn" onclick="$('#toggleXML').click();">
+                            <i class="fa fa-close"></i>
+                        </div>
+                        <div id="xmlTagPopin" class="xmlTags" title="Custom XML Tags">
+                        </div>
                     </div>
 
                 </div>
@@ -180,8 +215,8 @@
             </div>
         </div>
          <div id="parsingSplit" class="split" >
-                <button class="fullScreenTrans">Full Screen Transcription</button>
-                <div class="toolLinks">
+             <div class="fullScreenTrans">⇥ Close Tool</div>
+             <div class="toolLinks">
                 <!-- tool buttons for parsing -->
                 </div>
 
@@ -211,7 +246,7 @@
                                     </div>
                                     <div class="startHide" id="clearColumnsInst">
                                         <p class="">Click to clear the page, removing all transcription information.</p>
-                                        <span class="destroyPage" class="tpenButton ui-state-error" title="Destroy all columns on this page"><span class="left fa fa-circle-o"></span>Destroy All Data</span>
+                                        <span class="destroyPage" class="tpenButton ui-state-error" title="Destroy all columns on this page"><span class="pull-left fa fa-circle-o"></span>Destroy All Data</span>
                                         <p class="small"><span class="ui-state-error-text"><span class="inline fa fa-alert"></span>This is a destructive process and cannot be undone.</span><br />
                                          </p>
                                     </div>
@@ -235,7 +270,11 @@
                                             <div id="sampleRuler"></div>
                                             <label for="black"><input onclick="rulerColor('black');" CHECKED type="radio" value="black" name="rulerColor"/>Black</label>
                                             <label for="white"><input onclick='rulerColor("white");' id="white" type="radio" value="white" name="rulerColor"/>White</label>
-                                            <input style="width:80px;" title="Type the name of any valid HTML color or code. If the code is invalid, a default color will be shown." type="text" id="customRuler" onkeyup="rulerColor('custom');" placeholder="transparent" value="transparent"/>
+                                            <label style="margin-left: 10px; margin-right: 3px;" for="customRuler">
+                                                Custom
+                                                <input style="width:80px;" title="Type the name of any valid HTML color or code. If the code is invalid, a default color will be shown."
+                                                type="text" id="customRuler" onkeyup="rulerColor('custom');" placeholder="transparent" value="transparent"/>
+                                            </label>
                                         </div>
                                     </div>
                                     <div class="startHide" id="removeLinesInst">
@@ -262,26 +301,114 @@
                 </div>
             </div>
 
+<!--                    Linebreaking Tool-->
            <div id="linebreakSplit" class="ui-widget ui-widget-content split">
-               <button class="fullScreenTrans">Full Screen Transcription</button>
-                <h3>Linebreak Existing Transcription (In Development)</h3>
+               <div class="fullScreenTrans">⇥ Close Tool</div>
+               <h3>Linebreak Existing Transcription</h3>
+                <div id="linebreakTextContainer">
+                    <!-- visible if text is saved -->
+           <div>
+               This project has text stored for linebreaking:
+               <div id="linebreakText">
+                   <span id="lbText"> no text stored </span>
+                   <!--                   <div id='charLimit' class='ui-corner-all ui-state-error-text small clear'>More characters stored than shown here
+                                        If thisProject.getLinebreakCharacterLimit() is available in the project object, this can be more specific
+                                      </div>-->
+               </div>
+               <div id="linebreakOptions">
+                   <div id="useText" onclick="Linebreak.useText()" class="tpenButton block" title="Insert this text at the current line">Insert Text Here</div>
+                   <a id="newText" class="tpenButton block" title="Upload a new file to linebreak">Upload New File</a>
+                   <div id="linebreakStringBtn" class="tpenButton block" title="Attempt linebreaking using this string">Preview Automatic Linebreaks
+                       <!--                   TODO replace value with stored value once it is stored-->
+                       <input name="linebreakString" id="linebreakString" type="text" placeholder="<lb />" value="" />
+                   </div>
+                   <div id="useLinebreakText" onclick="Linebreak.useLinebreakText()" class="tpenButton block" style="display:none;" title="Automatically linebreak this page">Use Automatic Linebreaking
+                       <span id="linesDetected"></span>
+                   </div>
+               </div>
+                   <ol class="pull-left">
+                       <li>Navigate to a line to start;</li>
+                       <li><span class="loud">Insert Text</span> as a block; or</li>
+                       <li>Enter a linebreak string to attempt automatic linebreaking; and</li>
+                       <li>Press Enter to move all text following the cursor down to the next line.</li>
+                   </ol>
+                   <span class="small">*At the end of the page, the remaining text will be saved for use on the next page.</span>
            </div>
+       </div>
+       <div id="linebreakNoTextContainer">
+<!-- no text saved -->
+Begin by <a id="uploadText" class="btn btn-default">uploading some text</a> to linebreak
+       </div>
+
+
+
+                       </div>
             <div id="compareSplit" class="split">
+                <div class="fullScreenTrans">⇥ Close Tool</div>
                 <div class="toolLinks">
-                    <select id="compareJump">
+                    <select id="compareJump" class="lookLikeButtons">
                         <option folioNum="0">Compare To</option>
                     </select>
-                    <button class="fullScreenTrans">Full Screen Transcription</button>
                     <button class="showMe2" onclick="restoreWorkspace();">Show Workspace</button>
                     <button class="hideMe" style="position: relative;" onclick="hideWorkspaceToSeeImage();" >Hide Workspace</button>
-                    <button class="magnifyBtn" magnifyImg="compare" >Magnify</button>
+                    <button class="magnifyBtn" magnifyImg="compare" >Inspect <i class="fa fa-search-plus"></i></button>
                 </div>
 
                 <img class="compareImage" folioNum="1"></img>
             </div>
+<div id='controlsSplit' class='split' style="width:200px;max-width:200px;overflow:auto;">
+    <div class="fullScreenTrans"><i class="fa fa-reply"></i> Close Tool </div>
+    <div style="padding:15px;">
+        <header> Image Controls </header>
+        <button which="grayscale" class="block" onclick="toggleFilter('grayscale');" title="Grayscale">
+        <i class="fa fa-picture-o" style="color: #999;background: #DDD;border-radius: 2px;"></i>
+        Grayscale</button>
+        <button which="invert" class="block" onclick="toggleFilter('invert');">
+        <i class="fa fa-picture-o" style="background: #FFF;border-radius: 2px;color: #000;"></i>
+        Invert</button>
+        <div id="imageToolSliders" class="imgTool">
+            <i class="fa fa-sun-o"></i> Brightness
+            <div id="brightnessSlider"></div>
+            <i class="fa fa-adjust"></i> Contrast
+            <div id="contrastSlider"></div>
+        </div>
+
+        <header> Column Controls</header>
+        <button role="button" class="block" onclick="$(this).toggleClass('selected')">
+            <label for="lineToggle" title="Toggle Entire Lines">Show Lines</label><input title="Toggle Lines" type="checkbox" id="lineToggle" onchange="toggleLineMarkers();" >
+        </button>
+        <button role="button" class=" block" onclick="$(this).toggleClass('selected')">
+            <label for="indicatorToggle" title="Toggle Lines' Indicator">Show Labels</label><input type="checkbox" id="indicatorToggle" onchange="toggleLineCol();" checked="checked">
+        </button>
+        <button role="button" id="markerColors" class="block" onclick="markerColors();">Change Line Color</button>
+        <button role="button" id="parsingBtn" title="Redraw the lines on this page" class='block'>
+            <i class="fa fa-barcode fa-rotate-90"></i>
+            Edit Columns</button>
+
+        <header>
+            Keyboard Shortcuts
+        </header>
+        <div>
+            <strong>View/Move Image</strong>
+            <kbd>CTRL</kbd>+<kbd>ALT</kbd>: hold to temporarily hide the workspace and drag around your page image
+        </div>
+        <div>
+            <strong>Peek-Zoom</strong>
+            <kbd>CTRL</kbd>+<kbd>SHIFT</kbd>: peek-zoom into the current line of transcription
+        </div>
+    </div>
+<!--     <button id="moveImage" title="Move Transcription Image" class="block" onclick="startMoveImg();">
+        <i class="fa fa-hand-paper-o"></i>
+        Move Img</button>
+    <p>
+        Click to adjust the position of the main image.
+    </p> -->
+
+
+</div>
             <div id="previewSplit" class="split">
+                <div class="fullScreenTrans">⇥ Close Tool</div>
                 <div class="toolLinks">
-                    <button class="fullScreenTrans">Full Screen Transcription</button>
                     <button class="showMe2" onclick="restoreWorkspace();">Show Workspace</button>
                     <button class="hideMe" style="position: relative;" onclick="hideWorkspaceToSeeImage();" >Hide Workspace</button>
                 </div>
@@ -290,49 +417,16 @@
                 </div>
             </div>
             <div id="fullPageSplit" class="split">
+                <div class="fullScreenTrans">⇥ Close Tool</div>
                 <div class="toolLinks">
-                    <button class="fullScreenTrans">Full Screen Transcription</button>
                     <button class="showMe2" onclick="restoreWorkspace();">Show Workspace</button>
                     <button class="hideMe" style="position: relative;" onclick="hideWorkspaceToSeeImage();" >Hide Workspace</button>
-                    <button class="magnifyBtn" style="position: relative;" magnifyImg="full" >Magnify</button>
+                    <button class="magnifyBtn" style="position: relative;" magnifyImg="full" >Inspect</button>
                 </div>
                 <div id="fullPageSplitCanvas"><img id="fullPageImg" src="" /></div>
             </div>
         <div id="zoomDiv" class="ui-corner-all"></div>
         <div id="ruler1"></div><div id="ruler2"></div>
-        <div id="imageTools" style="width: 201px;">
-            <div class="popupTitle" > Image Controls </div>
-            <div class="closeBtn" onclick="$('#imageTools').hide();$('#imageTools').draggable('destroy');"> X </div>
-               <div class="toolWrap">
-                    <button style="margin-right: 18px; margin-top: 15px;" class="imgTool" which="grayscale" onclick="toggleFilter('grayscale');">Grayscale</button>
-                    <button style="margin-bottom: 10px;" class="imgTool" which="invert" onclick="toggleFilter('invert');">Invert</button>
-                    <div id="imageToolSliders" class="imgTool">
-                        Brightness
-                        <div id="brightnessSlider"></div>
-                        Contrast
-                        <div id="contrastSlider"></div>
-                    </div>
-               </div>
-        </div>
-        <div  id="lineColControls">
-            <div class="closeBtn" onclick="$('#lineColControls').hide(); $('#lineColControls').draggable('destroy');"> X </div>
-            <div title="Control Drawn Line Settings" id="lineCtrlLabel">Line Control</div>
-            <span style="top:14px;" title="Toggle Entire Lines" class="linehdr">Lines</span><input style="top:14px;" title="Toggle Lines" type="checkbox" onchange="toggleLineMarkers();" checked="checked"><br>
-            <span style="top:10px;" title="Toggle Lines' Indicator" class="linehdr">Line #s</span><input style="top:10px;" type="checkbox" onchange="toggleLineCol();" checked="checked">
-            <button id="markerColors" onclick="markerColors();">Line Color</button>
-        </div>
-        <div id="specialCharsFloat">
-            <div class="closeBtn" onclick="$('#specialCharsFloat').hide(); $('#specialCharsFloat').draggable('destroy');"> X </div>
-            <select id="charactersPopin" class="specialCharacters"  title="Special Characters" >
-                <option id="activeCharacters" >Characters</option>
-            </select>
-        </div>
-        <div id="xmlTagFloat">
-            <div class="closeBtn" onclick="$('#xmlTagFloat').hide(); $('#xmltagFloat').draggable('destroy');"> X </div>
-            <select id="xmlTagPopin" class="xmlTags" title="Custom XML Tags">
-                <option id="activeTags">XML Tags</option>
-            </select>
-        </div>
 
         <div id="requestAccessContainer" style="display: none;">
             <div id="requestAccess" class="ui-widget ui-corner-all ui-widget-content">
@@ -340,19 +434,27 @@
                 <div class="ui-state-error-text" style="text-align: center;"><span style="display: inline-block;" class="ui-icon ui-icon-alert"></span>You do not have permission to view this manuscript!</div>
                 <br />
                 <form action="requestAccess.jsp" method="POST">
-                    <!--    TODO: Include controller hint for user name of controller
-                            TODO: Include MS and projectIDs here.-->
                     <p title="">Request access for from the <span class="manController" title="">TPEN user who controls access</span> to this document.</P
                     <textarea name="reason" placeholder="Add any additional request details."></textarea>
                     <input type="hidden" name="ms" value="">
                     <input type="hidden" name="projectID" value="">
                     <input class="ui-button tpenButton clear right" type="submit" name="submitted" value="Send Request"/>
-                    
                 </form>
-                <a class="returnButton" href="index.jsp">Return Home</a>
+                <a class="returnButton exitPage" href="index.jsp">Return Home</a>
             </div>
-            <div id="trexHead"></div>
         </div>
+
+        <div id="iprAccept" class="ui-widget ui-corner-all ui-widget-content">
+            <h2 class="ui-widget-header ui-corner-all">Accept IPR Agreement</h2>
+            <p>Please read and accept the IPR agreement below to access <span id="ipr_who" class="loud"></span>. You only need to do this once.</p>
+            <div id="iprAgreement" class="notice"></div>
+                <span id="ipr_user" class="right small"></span>
+                <div class="clear right buttons">
+                <button id="accept_ipr" class="ui-button tpenButton" onclick="">I Agree</button>
+                <button class="ui-button tpenButton" onclick="document.location='index.jsp'">I do not agree</button>
+            </div>
+        </div>
+
         <div id="help">
             <div id="closeHelp" class="ui-icon-closethick ui-icon"></div>
                     <div id="helpPanels">
@@ -360,7 +462,7 @@
                             <h2>Page Navigation</h2>
                             <ul class="helpColumn">
                                 <li>Move through the page with the <span class="showMe">Previous Line</span> and <span class="showMe">Next Line</span> buttons to move from line to line.</li>
-                                <li>The <span class="showMe">Line Indicator</span> identifies the current column and line as well as the previous column and line based 
+                                <li>The <span class="showMe">Line Indicator</span> identifies the current column and line as well as the previous column and line based
                                     on the T&#8209;PEN <span ref="glossParsing" class="glossary">image parsing</span>.  Each drawn line also shows its column and line combination.
                                 </li>
                                 <li>Click on any line to jump to it.  <!--You can do this through the <span class="showMe">View Full Page</span> or <span class="showMe">Preview</span> tools. --></li>
@@ -372,15 +474,15 @@
                                 <dt>Custom Text Entry</dt>
                                 <dd>Expand the <span class="showMe">Characters</span> or <span class="showMe">XML Tags</span> list to reveal buttons to insert your custom tags or <span ref="glossSpecialCharacters" class="glossary">special characters</span> into the <span ref="glossTranscriptionArea" class="glossary">transcription area</span>.</dd>
                                 <dt class="showMe">View Full Page</dt>
-                                <dd>Show the whole page image. Mouseover the image to highlight individual lines. Click to navigate directly to that line. Use the available <span class="showMe">magnify tool</span> to take a closer look.</dd>
-<!--                                    
+                                <dd>Show the whole image. Click within the full view image to navigate directly to that line in the transcription area. Use the available <span class="showMe">inspection tool</span> to take a closer look.</dd>
+<!--
                                 <dt class="showMe">History</dt>
                                 <dd>Lists the previous saved versions of the <span ref="glossParsing" class="glossary">line parsing</span> and <span ref="glossTranscription" class="glossary">transcription text</span>. Mouseover the history entries to reveal options to revert to a previous version.</dd>
                                 <dt class="showMe">Abbreviations</dt>
                                 <dd>Browse A. Capelli's <cite>lexicon abbreviarum</cite> Latin and Italian abbreviations.</dd>-->
 
                                 <dt class="showMe">Compare Pages</dt>
-                                <dd>View other pages from this project. Use the available <span class="showMe">magnify tool</span> to take a closer look.</dd>
+                                <dd>View other pages from this project. Use the available <span class="showMe">inspection tool</span> to take a closer look.</dd>
                                 <dt class="showMe">Linebreak</dt>
                                 <dd>Upload a file for manual or automatic linebreaking.</dd>
                                 <dt class="showMe">Correct Parsing</dt>
@@ -411,6 +513,8 @@
                                         <dd>Move up and down through lines of transcription with the keyboard arrow keys.</dd>
                                     <dt>ALT + left/right arrows:</dt>
                                         <dd>Bump the active transcription line in the direction the arrow was pushed. *Warning: may create new columns.</dd>
+                                    <dt>While holding ALT:</dt>
+                                        <dd>Resize the active line by clicking and dragging the left or right edge.</dd>
                                     <dt>ESC:</dt>
                                         <dd>Close any open tool and return to fullscreen transcription.</dd>
 
@@ -419,7 +523,7 @@
 
 <!--                                    <dt>CTRL:</dt>
                                         <dd>Hold to get a better view of the important parts of your manuscript. The bookmark bounding box, location flag, and bug report form will all fade out and let you see the manuscript or tool behind it.</dd>-->
-                                    
+
                                     <dt>F1:</dt>
                                         <dd>On the transcription screen, pulls up the application help.</dd>
                                     <dt>F11:</dt>
@@ -427,7 +531,7 @@
 <!--                                        <dt>ALT + CTRL:</dt>
                                         <dd>Hold both to use the peek-zoom, which scales the bounded area to fit your screen and increases the quality of the image, if possible.</dd>-->
 
-                                    <dt>+ or - while magnifying:</dt>
+                                    <dt>+ or - while inspecting:</dt>
                                         <dd>Each keystroke will adjust the magnification of the tool by .4x to fine tune the image result.</dd>
                                 </dl>
                         </div>
@@ -476,20 +580,45 @@
                     <option SELECTED>Jump to page</option>
                 </select>-->
                 </div>
-        <script>
+                <div class="trexHead"></div>
+                <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
+                <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.js"></script>
+                <script type="text/javascript" src="js/transcribe.js"></script>
+                <script src="https://use.fontawesome.com/4ae676603d.js"></script>
+                <script type="text/javascript">
+                    var leftovers = tpen.project.remainingText;
+                    // get from StringEscapeUtils.escapeJavaScript(thisProject.getLinebreakText())
+                    if(leftovers && leftovers.length){
+                        $("#lbText").html(unescape(leftovers));
+                        $("#linebreakNoTextContainer").hide();
+                    } else {
+                        $("#linebreakTextContainer").hide();
+                        $("#linebreakNoTextContainer").show();
+                    }
+                function initLinks(){
+                    var uploadLocation = "uploadText.jsp?p="+tpen.project.folios[tpen.screen.currentFolio].folioNumber
+                    +"&projectID="+tpen.project.id;
+                    $("#uploadText").addClass("exitPage").add("#newText").attr("href",uploadLocation);
 
-    //Must explicitly set new height and width for percentages values in the DOM to take effect.
-    window.onresize = function(event) {
-        var newHeight = $("#imgBottom img").height();
-        $("#transcriptionCanvas").css("height",newHeight+"px");
-        $(".lineColIndicatorArea").css("height",newHeight+"px");
-        $.each($(".lineColOnLine"),function(){
-              $(this).css("line-height", $(this).height()+"px");
-          });
-    };
+                    // add projectID to buttons.jsp links
+                    $(".editButtons").addClass("exitPage").attr("href","buttons.jsp?p="
+                        + tpen.project.folios[tpen.screen.currentFolio].folioNumber
+                        + "&projectID=" + tpen.project.id+"#tabs-1");
+                    $(".editXMLs").addClass("exitPage").attr("href","buttons.jsp?p="
+                        + tpen.project.folios[tpen.screen.currentFolio].folioNumber
+                        + "&projectID=" + tpen.project.id+"#tabs-2");
+                }
+                </script>
+
+                <script>
+
+
+
+
 
     //Page load event triggers and attached here.
     $(document).ready(function(){
+        attachWindowResize();
         $("#imgTop, #imgBottom").css("height", "400px");
         $("#imgTop img, #imgBottom img").css("height", "400px");
         $("#imgTop img, #imgBottom img").css("width", "auto");
@@ -507,6 +636,7 @@
                     user = data.uname;
                     $("#trimCurrentUser").html(user);
                     $("#trimCurrentUser").attr("title",user);
+                    $("#ipr_user").html(user);
                     var theURL = window.location.href;
                     if (theURL.indexOf("projectID=") > -1){
                         var projID = getURLVariable("projectID");
@@ -576,16 +706,15 @@
             reader.readAsText(selectedFile);
         });
 
-
         $(".fullScreenTrans").click(function(){
             fullPage();
         });
-        
+
         $("#closeHelp").click(function(){
             //fullPage();
             $("#help").css({"left":"100%"}).fadeOut(1000);
         });
-        $("#helpMe").click(function(){Help.revealHelp; console.log("reveal the help");});
+        $("#helpMe").click(function(){Help.revealHelp;});
 
         $("#charactersPopin").on("change", function(event){
             var val = $("#charactersPopin").val();
@@ -593,8 +722,11 @@
         });
 
         $("#xmlTagPopin").on("change", function(event){
-            var val = $("#xmlTagPopin").val();
-            insterTag(val, "");
+            var val = escape($("#xmlTagPopin").val());
+            var fullTag = $("#xmlTagPopin option:selected").attr("title");
+            var closingTag = "";
+            insertAtCursor(val, closingTag, fullTag, false);
+
         });
 
         $(".magnifyBtn").click(function(event){
@@ -611,12 +743,25 @@
             }
         });
 
-        $("#imgTop").hover(function(){
-            var color = tpen.screen.colorThisTime.replace(".4", "1");
-            $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+color);
-        }, function(){
-            $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+tpen.screen.colorThisTime);
-        });
+//        var lineColor = tpen.screen.colorThisTime.replace(".4", ".9");
+        $("#imgTop").hover(
+            function(){
+                $('.activeLine').css('box-shadow', '0 0 15px 1em rgba(0,0,0,.4)');
+            },
+            function(){
+                $('.activeLine').css('box-shadow', '0 0 15px 0 rgba(0,0,0,1)');
+            }
+        );
+
+//        $("#imgBottom").hover(
+//            function(){
+//                $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor);
+//            },
+//            function(){
+//                var lineColor2 = lineColor.replace(".9", ".4");
+//                $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor2);
+//            }
+//        );
 
         document.addEventListener("mousewheel", function(e){
             if(tpen.screen.isMagnifying){
@@ -658,17 +803,19 @@
             }
             else if (event.which == 112) { //F1 for help
                 event.preventDefault();
-                console.log("F1 for help");
-                Help.revealHelp(); 
-                console.log("reveal the help");
+                Help.revealHelp();
                 //$("#helpMe").click();
             }
             else if (event.which == 18 || event.altKey){
                //console.log('ALT KEY');
-               var lineForEditing = $(".activeLine");
+            var lineForEditing = $(".activeLine");
                lineForEditing.resizable();
+               if(event.altKey&&event.ctrlKey || event.altKey&&event.metaKey){
+                   // hide workspace and move image
+                   tpen.screen.toggleMoveImage(event);
+               }
                //alt + arrows will bump active line left and right
-               if(event.which == 37 && (event.altKey||event.which == 18)){
+            else if(event.which == 37 && (event.altKey||event.which == 18)){
                    //left
                    event.preventDefault();
                    bumpLine("left", lineForEditing);
@@ -697,12 +844,15 @@
                 $(".magnifyBtn").removeClass("selected");
                 $("#moveImage").removeClass("selected");
                 $(".transcriptlet").children("textarea").removeClass("imageMove").removeAttr("disabled");
+                if(tpen.screen.liveTool && tpen.screen.liveTool !== "none" && tpen.screen.liveTool !== "parsing"){
+                    fullPage();
+                }
             }
             else if (event.which === 13){ //enter
-                var activeTranscriptlet = $(".transcriptlet:visible");
-                if(activeTranscriptlet.find('textarea').is(":focus")){
-                    nextTranscriptlet();
-                }
+                if (event.shiftKey || event.altKey) return true;
+                event.preventDefault();
+                Linebreak.moveTextToNextBox();
+                return nextTranscriptlet();
             }
             else if (event.which === 9){ // tab
             //TAB hijack to keep behavior as expected
@@ -714,18 +864,14 @@
                     else $("#nextLine").click();
                 }
             }
-            else if (event.ctrlKey || event.keyCode == ctrlKey || event.keyCode == cmdKey) { //ctrl
+            else if (event.ctrlKey || event.metaKey) { //ctrl
                 //This is also how you select a new tab in the browser.
-                if(event.ctrlKey && (event.which >= 49 && event.which <= 57)){ //insert a special char
+                if(event.which >= 49 && event.which <= 57){ //insert a special char
                     event.preventDefault();
                     event.stopPropagation();
                     //find the index in the special chars field and insert it.
-                    var index = event.which - 48;
-                    //This will insert a null if you do not make sure the index exists.
-                    if(index > 0 && ($("option.character").length >= index)){
-                        document.getElementById("charactersPopin").selectedIndex = index;
-                        $("#charactersPopin").change(); //populating to the text field fires in onchange to this element, we have to register the change.
-                    }
+                    var hotkey = $("#charactersPopin").children().eq(String.fromCharCode(event.which));
+                    hotkey.click(); //populating to the text field fires in onclick to this element, we have to register the change.
                 }
                 else if(event.ctrlKey && event.which === 36){ //HOME key.  Jump to first line.
                     event.preventDefault();
@@ -733,6 +879,9 @@
                     if($("div[pair='A1']").length){
                         $("div[pair='A1']").click();
                     }
+                } else if (event.shiftKey && !tpen.screen.isPeeking && !tpen.screen.isMagnifying) {
+                    // Peek-Zoom
+                    tpen.screen.peekZoom(false);
                 }
             }
             else {
@@ -747,14 +896,13 @@
                     $("#imgTop, #imgBottom").unbind("mouseup");
                     var lineForEditing = $(".transcriptlet[lineserverid='" + $(".activeLine").attr("lineserverid") + "']");
                     updateLine(lineForEditing, false, true); //update the active line in case it was bumped.
-                }
-                else{
-
+                } else if(tpen.screen.isPeeking && (!event.shiftKey || !(event.ctrlKey||event.metaKey))){
+                    // cancel Peek-Zoom
+                    tpen.screen.peekZoom(true);
                 }
             });
 
             $("#parsingBtn").click(function(){
-                tpen.screen.liveTool = "parsing";
                 if(tpen.screen.isFullscreen)tpen.screen.isUnadjusted = true;
                 tpen.screen.isFullscreen = false;
                 hideWorkspaceForParsing();
@@ -762,8 +910,10 @@
                 $("#parsingBtn").css("box-shadow", "");
             });
 
-            $(".workspaceHandle").mousedown(function(event){moveWorkspace(event);})
+           $(".workspaceHandle").mousedown(function(event){moveWorkspace(event);})
             .css("cursor","n-resize");
+
+
 
             $(".parsingToolButtons").children("span").click(function(event){
 
@@ -932,7 +1082,7 @@
                             var columnSet = $(".parsingColumn");
                             columnSet.addClass("parsingColumnSelected");
                             var columnText = (columnSet.size() === 1) ? "Destroy This Column" : "Destroy "+columnSet.size()+" Columns";
-                            $(".destroyPage").html('<span class="left fa fa-circle"></span>'+columnText+'')
+                            $(".destroyPage").html('<span class="pull-left fa fa-circle"></span>'+columnText+'')
                             .bind('click', function(){destroyPage();})
                     }
                 }
@@ -982,7 +1132,7 @@
                               var thisLineID = thisLine.attr("lineserverid");
                               var thisLineW = parseFloat(thisLine.attr("linewidth")) * (newW / originalW);
                               thisLine.attr("linewidth", thisLineW);
-                              updateLine(thisLine, false, false);
+                              updateLine(thisLine, false, true);
                               $("#progress").html("Line Saved").delay(3000).fadeOut(1000);
                               $("#lineResizing").delay(3000).fadeOut(1000);
                             }
@@ -1030,7 +1180,7 @@
 
 
         $(".accordion").children("span")
-        .append("<span class='fa fa-triangle-right left'></span>")
+        .append("<span class='fa fa-triangle-right pull-left'></span>")
         .click(function(event){
         $("#imgTop").unbind("mousemove");
         $("#imgTop").unbind("mousedown");
@@ -1059,7 +1209,7 @@
                 //load the adjustment tool and then show the reparsing instructions
                 $(".parsingColumn").removeClass("parsingColumnSelected");
                 var columnSet = $(".parsingColumn");
-                $("#reparseColumn").html('<span class="left fa fa-refresh"></span>Submit '+columnSet.size()+' for Reparsing');
+                $("#reparseColumn").html('<span class="pull-left fa fa-refresh"></span>Submit '+columnSet.size()+' for Reparsing');
                 $("#reparseColumn").bind('click', function(){
                     reparseColumns();
                 });
@@ -1101,7 +1251,7 @@
             }
             scrollToCurrentPage();
         });
-        
+
         $(".helpContents").click(function(){
           Help.select($(this));
         });
@@ -1112,7 +1262,7 @@
           var content = "<span class='ui-state-default ui-corner-all lightUp' ref='"+index+"'>Show on Screen</span><span class='ui-state-default ui-corner-all video' ref='"+index+"'>Video Help</span>";
           tip.addClass("helpDetail ui-corner-all").html(content);
           return tip;
-          });    
+          });
   }).hover(function(){
           var thisWidth = $(this).width()+10;
           var tipWidth = 200;
@@ -1160,6 +1310,25 @@
           var def = $("#"+ref);
           def.css('color','orangered');
       });
+
+        $(".exitPage").click(function(event) {
+            var thisLink = $(this).attr("href");
+            event.preventDefault();
+            //If there is any ajax running and you try to leave a page, this will stop you
+            $("body").ajaxStart(function() {
+              $(this).addClass("ui-state-disabled");
+            }).ajaxStop(function() {
+                //When the ajax finishes, you can leave.
+              if (thisLink.indexOf("?") != -1)
+                thisLink += "&tool=" + tpen.screen.liveTool;
+                Data.saveTranscription(thisLink);
+            });
+            Data.saveTranscription(thisLink);
+//            if (leftovers != undefined)
+//              Linebreak.saveLeftovers(escape(leftovers));
+        });
+
+
     });
 
     /* Allows users to slightly adjust a line within a column while within the transcription interface. */
@@ -1351,7 +1520,7 @@
     function rulerColor(color){
         if(color==="custom"){
             color=$("#customRuler").val();
-            if(validTextColor(color)){
+            if(validTextColour(color)){
 
             }
             else{

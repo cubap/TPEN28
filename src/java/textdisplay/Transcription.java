@@ -453,14 +453,14 @@ public class Transcription {
     * @param Line number of the Line within this page
     * @throws SQLException
     */
-   public Transcription(int uniqueID) throws SQLException {
+   public Transcription(String uniqueID) throws SQLException {
       Connection j = null;
       PreparedStatement stmt = null;
       try {
          j = DatabaseWrapper.getConnection();
 
          stmt = j.prepareStatement("Select * from transcription where id=?");
-         stmt.setInt(1, uniqueID);
+         stmt.setString(1, uniqueID);
          ResultSet rs;
          rs = stmt.executeQuery();
          if (rs.next()) {
@@ -503,7 +503,7 @@ public class Transcription {
          ResultSet transcriptionIDs = ps.executeQuery();
          while (transcriptionIDs.next()) {
             //add a Transcription object built using the unique id
-            orderedTranscriptions.add(new Transcription(transcriptionIDs.getInt(1)));
+            orderedTranscriptions.add(new Transcription(transcriptionIDs.getString(1)));
          }
          if (orderedTranscriptions.size() == 0) {
             //create Transcription(s) based on Project settings and Line parsing
@@ -662,7 +662,7 @@ public class Transcription {
          ResultSet transcriptionIDs = ps.executeQuery();
          while (transcriptionIDs.next()) {
             //add a Transcription object built using the unique id
-            orderedTranscriptions.add(new Transcription(transcriptionIDs.getInt(1)));
+            orderedTranscriptions.add(new Transcription(transcriptionIDs.getString(1)));
          }
          if (orderedTranscriptions.size() == 0) {
             Folio f = new Folio(folioNumber, true);

@@ -437,17 +437,10 @@ function equalWidth(){
                         <p>Buttons are mapped to the digits 1-9 on your keyboard. <span class="loud">Hold CTRL and press the corresponding number key</span> to insert one into your transcription.</p>
                         <p>Rearrange by clicking on the blue box and dragging to a new position. Click the X to remove a button.</p>
                         <p>You may add more than 9, but only the first 9 will be mapped to shortcuts.</p>
-                        <div id="characterReview"><h5>Current Special Character Buttons</h5>
-    <%
-        /**Retrieve stored button information*/
-                        Hotkey ha;
-                        ha=new Hotkey(projectID,true);
-                        out.print(ha.javascriptToAddProjectButtons(projectID));
-    %>
-                        </div>
                     </div>
                         <ul id="sortable1" class="connectedSortable ui-helper-reset">
             <%
+                Hotkey ha;
                     int ctr = 1;
                     try {
                         String ref = request.getHeader("referer");
@@ -459,7 +452,7 @@ function equalWidth(){
                     }
                     while (new Hotkey(projectID, ctr, true).exists()) {
                         ha = new Hotkey(projectID, ctr, true);
-                        out.print("<li class=\"ui-state-default\"><input readonly class=\"label\" name=\"a"+ctr+"a\" id=\"a"+ctr+"a\" value=\""+(char)Integer.parseInt(ha.getButton())+"\" tabindex=-5>\n");
+                        out.print("<li class=\"ui-state-default\"><input readonly class=\"label hotkey\" name=\"a"+ctr+"a\" id=\"a"+ctr+"a\" value=\""+(char)Integer.parseInt(ha.getButton())+"\" tabindex=-5>\n");
                         out.print("<input class=\"shrink\" onkeyup=\"updatea(this);\" name=\"a"+ctr+"\" id=\"a"+ctr+"\" type=\"text\" value=\""+ha.getButton()+"\"></input>");
                         out.print("<a class=\"ui-icon ui-icon-closethick right\" onclick=\"deleteHotkey(" + ctr + ");\">delete</a></li>");
                         out.print("\n");
@@ -475,12 +468,6 @@ function equalWidth(){
                         <h2>Custom XML Tags</h2>
                         <p>Add each tag without &lsaquo;angle brackets&rsaquo;, any parameters including &quot;quotes&quot; in the next 5 fields, and a description in the final field. Text in the <span class="loud">"description"</span> field will become the title of your button. Seek conciseness.</p>
                         <p>Rearrange by clicking on the blue box and dragging. Click the "X" icon to remove a button from the list. Add as many buttons as is useful. You will access them through the footer menu.</p>
-                        <div id="xmlReview"><h5>Current Tags</h5>
-    <%
-        /**Retrieve stored button information*/
-        out.print(TagButton.getAllProjectButtons(projectID));
-    %>
-                        </div>
                     </div>
                     <ul id="sortable2" class="connectedSortable ui-helper-reset">
 <%

@@ -1044,6 +1044,10 @@ input.text, input.title {
 input.title {
     font-size:1.5em;
 }
+.theText,#captions,input.hotkey {
+    font-family:'Junicode','Georgia', serif;
+}
+
 textarea {
     width:390px;
     height:250px;

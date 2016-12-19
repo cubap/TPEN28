@@ -87,7 +87,7 @@ PreparedStatement ps=null;
                     int thisID=rs.getInt("id");
                     String thisTagtag=rs.getString("tag");
                     int folio=rs.getInt("folio");
-                    int line=rs.getInt("line");
+                    String line=rs.getString("line");
                     Transcription t=new Transcription(line);
                     if(!t.getText().contains("<"+thisTagtag))
                     {
@@ -156,7 +156,7 @@ PreparedStatement ps=null;
                 while(rs.next())
                 {
                     //append all items to the return list
-                    toret.add(new String []{rs.getString("id"),rs.getString("tag"),""+rs.getInt("folio"),""+rs.getInt("line")});
+                    toret.add(new String []{rs.getString("id"),rs.getString("tag"),""+rs.getInt("folio"),""+rs.getString("line")});
                 }
                 }
                 return toret;
@@ -193,7 +193,7 @@ DatabaseWrapper.closePreparedStatement(ps);
         return true;
     }
     /**Add a new tag to the list of currently open tags for this Project*/
-    public int addTag(String tag, int folio, int line) throws SQLException
+    public int addTag(String tag, int folio, String line) throws SQLException
     {
         Connection j=null;
 PreparedStatement ps=null;
@@ -203,7 +203,7 @@ PreparedStatement ps=null;
             ps=j.prepareStatement("insert into tagtracking(tag,folio,line, projectID) values(?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
             ps.setString(1, tag);
             ps.setInt(2, folio);
-            ps.setInt(3, line);
+            ps.setString(3, line);
             ps.setInt(4, thisProject.getProjectID());
             ps.execute();
             ResultSet rs=ps.getGeneratedKeys();

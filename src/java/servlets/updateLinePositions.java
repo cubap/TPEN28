@@ -78,7 +78,7 @@ public class updateLinePositions extends HttpServlet {
             if (request.getParameter("submitted") != null) {
 
                if (request.getParameter("remove") != null) {
-                  textdisplay.Transcription t = new textdisplay.Transcription(Integer.parseInt(request.getParameter("remove")));
+                  textdisplay.Transcription t = new textdisplay.Transcription(request.getParameter("remove"));
                   t.archive();
                   t.remove();
                }
@@ -113,7 +113,7 @@ public class updateLinePositions extends HttpServlet {
                   out.print(t.getLineID());
                }
                if (request.getParameter("update") != null) {
-                  int lineID = Integer.parseInt(request.getParameter("update"));
+                  String lineID = request.getParameter("update");
                   Transcription t = new Transcription(lineID);
                   String xStr = request.getParameter("updatex");
                   if (xStr.contains(".")) {

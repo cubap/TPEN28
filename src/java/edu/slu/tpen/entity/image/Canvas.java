@@ -250,6 +250,54 @@ public class Canvas {
         
         return new_resources;
     }
+    
+    /* 
+    @param resources: A JSON array of annotations that are all new (insert can be used).  
+    @return A JSONArray of annotations with their @id included.
+
+    The resources need to be saved and a JSON array of the objects with their @ids in them needs
+    to be returned.
+    */
+    public static JSONArray bulkUpdateTranscriptlets(JSONArray resources) throws MalformedURLException, IOException{
+        JSONArray new_resources = new JSONArray();
+        URL postUrlCopyAnno = new URL(Constant.ANNOTATION_SERVER_ADDR + "/anno/batchSaveMetadataForm.action");
+        HttpURLConnection ucCopyAnno = (HttpURLConnection) postUrlCopyAnno.openConnection();
+        ucCopyAnno.setDoInput(true);
+        ucCopyAnno.setDoOutput(true);
+        ucCopyAnno.setRequestMethod("POST");
+        ucCopyAnno.setUseCaches(false);
+        ucCopyAnno.setInstanceFollowRedirects(true);
+        ucCopyAnno.addRequestProperty("content-type", "application/x-www-form-urlencoded");
+        ucCopyAnno.connect();
+        DataOutputStream dataOutCopyAnno = new DataOutputStream(ucCopyAnno.getOutputStream());
+        String str_resources = "";
+        if(resources.size() > 0){
+            str_resources = resources.toString();
+        }
+        else{
+            str_resources = "[]";
+        }
+        dataOutCopyAnno.writeBytes("content=" + URLEncoder.encode(str_resources, "utf-8"));
+        dataOutCopyAnno.flush();
+        dataOutCopyAnno.close();
+        BufferedReader returnedAnnoList = new BufferedReader(new InputStreamReader(ucCopyAnno.getInputStream(),"utf-8"));
+        String lines = "";
+        StringBuilder sbAnnoLines = new StringBuilder();
+        while ((lines = returnedAnnoList.readLine()) != null){
+//                                    System.out.println(lineAnnoLs);
+            sbAnnoLines.append(lines);
+        }
+        returnedAnnoList.close();
+        String parseThis = sbAnnoLines.toString();
+        JSONObject batchSaveResponse = JSONObject.fromObject(parseThis);
+        try{
+            new_resources = (JSONArray) batchSaveResponse.get("reviewed_resources");
+        }
+        catch(JSONException e){
+           // System.out.println("Batch save response does not contain JSONARRAY in new_resouces.");
+        }
+        return new_resources;
+    }
 }
 
 
