@@ -3668,7 +3668,7 @@ function saveNewLine(lineBefore, newLine){
     );
     if (onCanvas !== undefined && onCanvas !== ""){
         $.post(url, params, function(data){
-            data = JSON.parse(data);
+            //data = JSON.parse(data);
             dbLine["@id"] = data;
             newLine.attr("lineserverid", data); //data["@id"]
             $("div[newcol='" + true + "']").attr({
@@ -3908,7 +3908,8 @@ function removeLine(e, columnDelete){
             }).addClass("newDiv").attr({
                 "lineheight":   convertedNewLineHeight
             });
-        } else if ($(e).hasClass("deletable")){
+        } 
+        else if ($(e).hasClass("deletable")){
             var cfrm = confirm("Removing this line will remove any data contained as well.\n\nContinue?");
             if (!cfrm){
                 $("#parsingCover").hide();
@@ -3935,28 +3936,38 @@ function removeTranscriptlet(lineid, updatedLineID, draw, cover){
     $("#parsingCover").show();
     var updateText = "";
     var removeNextLine = false;
-    if (lineid !== updatedLineID){
-        removeNextLine = true;
-        var updatedLine = $(".parsing[lineserverid='" + updatedLineID + "']");
-        var removedLine1 = $(".parsing[lineserverid='" + lineid + "']");
-        var removedLine2 = $(".transcriptlet[lineserverid='" + lineid + "']");
-        var toUpdate = $(".transcriptlet[lineserverid='" + updatedLineID + "']");
-        var removedText = $(".transcriptlet[lineserverid='" + lineid + "']").find("textarea").val();
-        toUpdate.find("textarea").val(function(){
-            var thisValue = $(this).val();
-            if (removedText !== undefined){
-                if (removedText !== "") thisValue += (" " + removedText);
-                updateText = thisValue;
-            }
-            return thisValue;
-        });
-        var lineHeightForUpdate = parseFloat(toUpdate.attr("lineheight")) + parseFloat(removedLine2.attr("lineheight"));
-        toUpdate.attr("lineheight", lineHeightForUpdate);
-    }
-    else {
-    }
+    var index = 0;
+    var toUpdate = $(".transcriptlet[lineserverid='" + updatedLineID + "']");
+    var removedLine2 = $(".transcriptlet[lineserverid='" + lineid + "']");
+    var removedText = $(".transcriptlet[lineserverid='" + lineid + "']").find(".theText").val();
+    var params = new Array();
     var currentFolio = parseInt(tpen.screen.currentFolio);
     var currentAnnoList = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio], false, false);
+    var url = "updateLineParsing";
+    
+    if (lineid !== updatedLineID){ 
+        //we need to make sure the height and text of the next line is updated ocrrectly
+        removeNextLine = true;
+        var lineAfterText = toUpdate.find("textarea").val();
+        updateText = removedText + " " +lineAfterText;
+        toUpdate.find(".theText").val(updateText);
+//        (function(){
+//            var thisValue = $(this).val();
+//            if (removedText !== undefined){
+//                if (removedText !== "") thisValue += (" " + removedText);
+//                updateText = thisValue;
+//            }
+//            return thisValue;
+//        });
+        var lineHeightForUpdate = parseFloat(toUpdate.attr("lineheight")) + parseFloat(removedLine2.attr("lineheight"));
+        toUpdate.attr("lineheight", lineHeightForUpdate);
+//        tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio].otherContent[0].resources = currentAnnoList;
+//                var paramObj = {"@id":tpen.screen.currentAnnoListID, "resources": currentAnnoList};
+//                var params = {"content":JSON.stringify(paramObj)};
+        params.push({name:"remove", value:lineid});
+    }
+
+    
     if (currentAnnoList !== "noList" && currentAnnoList !== "empty"){
         $.each(currentAnnoList, function(index){
             var lineIDToCheck = "";
@@ -3969,16 +3980,19 @@ function removeTranscriptlet(lineid, updatedLineID, draw, cover){
             }
             if (this["@id"] === lineIDToCheck){
                 currentAnnoList.splice(index, 1);
-                var url = "updateAnnoList";
-                tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio] = currentAnnoList;
-                var paramObj = {"@id":tpen.screen.currentAnnoListID, "resources": currentAnnoList};
-                var params = {"content":JSON.stringify(paramObj)};
+                //var url = "updateAnnoList";
+                
+                tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio].otherContent[0].resources = currentAnnoList;
+//                var paramObj = {"@id":tpen.screen.currentAnnoListID, "resources": currentAnnoList};
+//                var params = {"content":JSON.stringify(paramObj)};
                 $.post(url, params, function(data){
                     if (!removeNextLine){
+                        //we only had to remove a line, we are done
                         $("#parsingCover").hide();
                     }
                     else {
-                        updateLine(toUpdate, false, false); //put $(#parsingCover).hide() in updateLine(), but may just need it here for this scenario.
+                        //we removed a line, but the line after that line needs to absorb its text and height, so we need an update.  The line after is named toUpdate.
+                        updateLine(toUpdate, false, false); 
                     }
                 });
             }
@@ -3988,6 +4002,7 @@ function removeTranscriptlet(lineid, updatedLineID, draw, cover){
         throw new Error("There is no anno list assosiated with this anno.  This is an error.");
     }
     else { // If it is classic T-PEN, we need to update canvas resources
+        cosnole.warn("Detected a classic object");
         currentFolio = parseInt(currentFolio);
         $.each(tpen.manifest.sequences[0].canvases[currentFolio - 1].resources, function(){
             index++;
