@@ -75,6 +75,7 @@ public class manuscriptListings extends HttpServlet {
                         if (mss[i].isRestricted()) {
                             out.print("<span class=\"restricted\">Restricted Access</span>\n");
                         }
+                        int projectID = mss[i].checkExistingProjects(mss[i].getID(), UID);
                         Boolean resume = false;
                         for (int l = 0; l < msIDs.length; l++) {
                             if (msIDs[l] == mss[i].getID()) {
@@ -82,11 +83,12 @@ public class manuscriptListings extends HttpServlet {
                             }
                         }
                         if (resume) {
+                            
                         // TODO: Find project from the MS and then send to transcription.html?projectID=##
-                            out.print("<a href='javascript:createProject(" + mss[i].getID() + ");'>Resume transcribing</a>" + "\n");
+                            out.print("<a href='transcription.html?projectID=" + projectID + "'>Resume transcribing</a>" + "\n");
                         } else {
                         // TODO: Build a project from the MS and then send to transcription.html?projectID=##
-                            out.print("(Not marked)<a href='javascript:createProject(" + mss[i].getID() + ");'>Start transcribing</a>" + "\n");
+                            out.print("(Not marked)<a onclick='createProject(" + mss[i].getID() + ");'>Start transcribing</a>" + "\n");
                         }
                         
                         
@@ -123,6 +125,7 @@ public class manuscriptListings extends HttpServlet {
                             out.print("<span class=\"restricted\">Restricted Access</span>\n");
                         }
                         Boolean resume = false;
+                        int projectID = mss[i].checkExistingProjects(mss[i].getID(), UID);
                         for (int l = 0; l < msIDs.length; l++) {
                             if (msIDs[l] == mss[i].getID()) {
                                 resume = true;
@@ -130,10 +133,10 @@ public class manuscriptListings extends HttpServlet {
                         }
                         if (resume) {
                         // TODO: Find the project from the MS and then send to transcription.html?projectID=##
-                            out.print("<a href='javascript:createProject(" + mss[i].getID() + ");' class=\"resume\">Resume transcribing</a>" + "\n");
+                            out.print("<a href='transcription.html?projectID=" + projectID + ";' class=\"resume\">Resume transcribing</a>" + "\n");
                         } else {
                         // TODO: Build a project from the MS and then send to transcription.html?projectID=##
-                            out.print("<a href='javascript:createProject(" + mss[i].getID() + ");' class=\"unmarked\">Start transcribing</a>" + "\n");
+                            out.print("<a onclick='createProject(" + mss[i].getID() + ");' class=\"unmarked\">Start transcribing</a>" + "\n");
                         }
                         out.print("<a href=addMStoProject.jsp?ms=" + mss[i].getID() + ">Add to project</a>" + "\n<br>");
                     }
@@ -168,6 +171,7 @@ public class manuscriptListings extends HttpServlet {
                             out.print("<span class=\"restricted\">Restricted Access</span>\n");
                         }
                         Boolean resume = false;
+                        int projectID = mss[i].checkExistingProjects(mss[i].getID(), UID);
                         for (int l = 0; l < msIDs.length; l++) {
                             if (msIDs[l] == mss[i].getID()) {
                                 resume = true;
@@ -175,10 +179,10 @@ public class manuscriptListings extends HttpServlet {
                         }
                         if (resume) {
                         // TODO: Find the project from the MS and then send to transcription.html?projectID=##
-                            out.print("<a href='javascript:createProject(" + mss[i].getID() + ");'>Resume transcribing</a>" + "\n");
+                            out.print("<a href='transcription.html?projectID=" + projectID + ";'>Resume transcribing</a>" + "\n");
                         } else {
                         // TODO: Build a project from the MS and then send to transcription.html?projectID=##
-                            out.print("<a href='javascript:createProject(" + mss[i].getID() + ");'>(Not marked)Start transcribing</a>" + "\n");
+                            out.print("<a onclick='createProject(" + mss[i].getID() + ");'>(Not marked)Start transcribing</a>" + "\n");
                         }
                         //out.print("<a href=transcription.jsp?ms=" + mss[i].getID() + ">Start transcribing</a>" + "\n");
                         out.print("<a href=addMStoProject.jsp?ms=" + mss[i].getID() + ">Add to project</a>" + "\n<br>");

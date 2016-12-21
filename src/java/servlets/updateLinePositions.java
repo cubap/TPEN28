@@ -113,7 +113,9 @@ public class updateLinePositions extends HttpServlet {
                   out.print(t.getLineID());
                }
                if (request.getParameter("update") != null) {
+                   
                   String lineID = request.getParameter("update");
+                  System.out.println("The back end says we should update line "+lineID);
                   Transcription t = new Transcription(lineID);
                   String xStr = request.getParameter("updatex");
                   if (xStr.contains(".")) {

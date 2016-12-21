@@ -451,3 +451,22 @@ if ($("body").is("#transcriptionPage")){
       }
     }, false);
 }*/
+                
+    /*  Bryan H 12/20/16
+     * I believe index.jsp makes a onclick='javascript:createProject(msID);' call through the links for Start Transcribing.
+     * This is the javascript fuction that it tries to call, with the redirect to handle success and an alert for failure.
+     * */
+    function createProject(msID){
+        var url = "createProject";
+        var params = {ms:msID};
+        var projectID = 0;
+        $.post(url, params)
+        .success(function(data){
+            projectID = data;
+            window.location.href = "transcription.html?projectID="+projectID;
+        })
+        .fail(function(data){
+            alert("Could not create project");
+        });
+        
+    }

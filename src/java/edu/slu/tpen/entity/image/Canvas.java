@@ -6,7 +6,10 @@
 
 package edu.slu.tpen.entity.Image;
 
+import static com.hp.hpl.jena.assembler.Assembler.connection;
+import static com.hp.hpl.jena.vocabulary.TestManifest.result;
 import edu.slu.tpen.servlet.Constant;
+import static edu.slu.util.LangUtils.buildQuickMap;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,11 +18,18 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import org.owasp.esapi.ESAPI;
+import textdisplay.Annotation;
+import textdisplay.Transcription;
 
 /**
  *
@@ -148,6 +158,58 @@ public class Canvas {
     public void setLs_otherContent(List<OtherContent> ls_otherContent) {
         this.ls_otherContent = ls_otherContent;
     }
+
+    /**
+     * Load annotations on this canvas for this project.
+     * @param projectID : the projectID the canvas belongs to
+     * @param canvasID: The canvas ID the annotation list is on
+     * @param folioNumber : The folio ID on this canvas
+     * @param UID: The current UID of the user in session.
+     * @return : The annotation lists @id property, not the object.  Meant to look like an otherContent field.
+     */
+    public static JSONArray getLinesForProject(Integer projectID, String canvasID, Integer folioNumber, Integer UID) throws MalformedURLException, IOException, SQLException {
+        JSONObject parameter = new JSONObject();
+        JSONObject annotationList = new JSONObject();
+        JSONArray resources_array = new JSONArray();
+        annotationList.element("@type", "sc:AnnotationList");
+        annotationList.element("label", canvasID+" List");
+        annotationList.element("proj", projectID);
+        annotationList.element("on", canvasID);
+        annotationList.element("@context", "http://iiif.io/api/presentation/2/context.json");
+        annotationList.element("testing", "msid_creation");
+        Transcription[] lines;
+        parameter.element("@type", "sc:AnnotationList");
+        if(projectID > -1){
+            parameter.element("proj", projectID);
+        }
+        parameter.element("on", canvasID);
+        lines = Transcription.getProjectTranscriptions(projectID, folioNumber);
+        int numberOfLines = lines.length;
+        List<Object> resources = new ArrayList<>();
+        for (int i = 0; i < numberOfLines; i++) {
+            if (lines[i] != null) {    
+                int lineID = lines[i].getLineID();
+                Map<String, Object> lineAnnot = new LinkedHashMap<>();
+                String lineURI = "line/" + lineID;
+                //lineAnnot.put("@id", lineURI);
+                lineAnnot.put("tpen_line_id", lineURI);
+                lineAnnot.put("@type", "oa:Annotation");
+                lineAnnot.put("motivation", "oad:transcribing"); 
+                lineAnnot.put("resource", buildQuickMap("@type", "cnt:ContentAsText", "cnt:chars", ESAPI.encoder().decodeForHTML(lines[i].getText())));
+                lineAnnot.put("on", String.format("%s#xywh=%d,%d,%d,%d", canvasID, lines[i].getX(), lines[i].getY(), lines[i].getWidth(), lines[i].getHeight())); 
+                lineAnnot.put("_tpen_note", lines[i].getComment());
+                lineAnnot.put("_tpen_creator",lines[i].getCreator());
+                resources.add(lineAnnot);
+            }
+        }
+        resources_array = JSONArray.fromObject(resources);
+//            String newListID = Annotation.saveNewAnnotationList(annotationList);
+//            annotationList.element("@id", newListID);
+        annotationList.element("resources", resources_array);
+        JSONArray annotationLists = new JSONArray();
+        annotationLists.add(annotationList); // Only one in this version.
+        return annotationLists;
+}
     
     /**
      * Check the annotation store for the annotation list on this canvas for this project.

@@ -398,11 +398,11 @@
     </servlet>
     <servlet>
         <servlet-name>createProjectFromMSID</servlet-name>
-        <servlet-class>edu.slu.tpen.servlet.CreateProjectFromMSIDServlet</servlet-class>
+        <servlet-class>edu.slu.tpen.servlet.CreateProjectClassic</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>createProject</servlet-name>
-        <servlet-class>edu.slu.tpen.servlet.CreateProjectServlet</servlet-class>
+        <servlet-class>edu.slu.tpen.servlet.CreateProjectClassic</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>copyProject</servlet-name>
@@ -503,7 +503,7 @@
     </servlet>-->
     <servlet>
         <servlet-name>CopyProjectAndAnnos</servlet-name>
-        <servlet-class>edu.slu.tpen.servlet.CopyProjectAndAnnos</servlet-class>
+        <servlet-class>edu.slu.tpen.servlet.CopyProjWithAnnoServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>imageParsing</servlet-name>

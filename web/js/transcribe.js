@@ -30,15 +30,8 @@ var tpen = {
         isMagnifying: false,
         isFullscreen: true,
         isAddingLines: false,
-        colorList: [
-            "rgba(153,255,0,.4)",
-            "rgba(0,255,204,.4)",
-            "rgba(51,0,204,.4)",
-            "rgba(204,255,0,.4)",
-            "rgba(0,0,0,.4)",
-            "rgba(255,255,255,.4)",
-            "rgba(255,0,0,.4)"],
-        colorThisTime: "rgba(255,255,255,.4)",
+        colorList: ["black","lime","magenta","white","#A64129"],
+        colorThisTime: "#A64129",
         currentFolio: 0,
         currentAnnoListID: 0,
         nextColumnToRemove: null,
@@ -46,7 +39,12 @@ var tpen = {
         parsing: false,
         linebreakString : "<br>",
         brokenText : [""],
-        currentManuscriptID: -1
+        currentManuscriptID: -1,
+        imgTopSizeRatio : 1, //This is used specifically for resizing the window to help the parsing interface.
+        imgTopPositionRatio: 1,
+        imgBottomPositionRatio:1,
+        originalCanvasHeight : 1000, //The canvas height when initially loaded into the transcription interface.
+        originalCanvasWidth: 1 //The canvas width when initially loaded into the transcrtiption interface.
     },
     user: {
         isAdmin: false,
@@ -72,7 +70,7 @@ function redraw() {
     if (tpen.screen.currentFolio > - 1) {
         if (tpen.screen.liveTool === "parsing") {
             $(".pageTurnCover").show();
-            fullPage();
+            //fullPage();
             tpen.screen.currentFolio = parseInt(tpen.screen.currentFolio);
             if (!canvas) {
                 canvas = tpen.manifest.sequences[0].canvases[0];
@@ -98,15 +96,20 @@ function redraw() {
 }
 
 function scrubNav(){
+    if(!tpen.manifest.sequences
+    || !tpen.manifest.sequences[0]
+    || !tpen.manifest.sequences[0].canvases){
+        return false;
+    }
     if(tpen.screen.currentFolio === 0){
-        $("#prevCanvas").css("visibility","hidden");
+        $("#prevCanvas,#prevPage").css("visibility","hidden");
     } else {
-        $("#prevCanvas").css("visibility","");
+        $("#prevCanvas,#prevPage").css("visibility","");
     }
     if (tpen.screen.currentFolio >= tpen.manifest.sequences[0].canvases.length - 1) {
-        $("#nextCanvas").css("visibility","hidden");
+        $("#nextCanvas,#nextPage").css("visibility","hidden");
     } else {
-        $("#nextCanvas").css("visibility","");
+        $("#nextCanvas,#nextPage").css("visibility","");
     }
 }
 
@@ -176,11 +179,12 @@ function createPreviewPages(){
                 currentPage = "currentPage";
             }
             if (currentFolioToUse.otherContent && currentFolioToUse.otherContent.length > 0){
-                var allAnnoLists = currentFolioToUse.otherContent;
-                for(var j=0; j<allAnnoLists.length; j++){
-                    var thisList = allAnnoLists[j];
-                    makePreviewPage(thisList, pageLabel, currentPage, i, j, allAnnoLists.length);
-                }
+                var listOfAnnos = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio], false, false);
+                //var allAnnoLists = currentFolioToUse.otherContent;
+                //for(var j=0; j<allAnnoLists.length; j++){
+                    //var thisList = allAnnoLists[j];
+                makePreviewPage(listOfAnnos, pageLabel, currentPage, i, 0, listOfAnnos.length);
+                //}
             }
             else{
                 console.warn("otherContent was null or empty, passing an empty array of lines");
@@ -191,15 +195,16 @@ function createPreviewPages(){
 }
 
 function makePreviewPage(thisList, pageLabel, currentPage, i, j, l){
-    $.get(thisList,function(data){
-        if(data.proj == tpen.project.id){
-            var linesForThisProject = data.resources;
-            populatePreview(linesForThisProject, pageLabel, currentPage, i);
-        }
-        else if(j == l){ //we did not find the proper annotation list, send this off to create an empty page
-            populatePreview(linesForThisProject, pageLabel, currentPage, i);
-        }
-    });
+    var listOfAnnos = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio], false, false);
+    populatePreview(listOfAnnos, pageLabel, currentPage, i);
+//    if(data.proj == tpen.project.id){
+//        var linesForThisProject = data.resources;
+//        populatePreview(linesForThisProject, pageLabel, currentPage, i);
+//    }
+//    else if(j == l){ //we did not find the proper annotation list, send this off to create an empty page
+//        populatePreview(linesForThisProject, pageLabel, currentPage, i);
+//    }
+
 }
 
 /* Gather the annotations for a canvas and populate the preview interface with them. */
@@ -476,11 +481,7 @@ function loadTranscription(pid, tool){
         //The user can put the project ID in directly and a call will be made to newberry proper to grab it.
         projectID = pid || userTranscription;
         tpen.project.id = projectID; //this must be set or the canvas won't draw
-        var aBar = document.location.href;
-        var toAddressBar = aBar+"?projectID=" + projectID;
-        if(aBar.indexOf("projectID=") === -1){
-            window.history.pushState("", "T-PEN Transcription", toAddressBar);
-        }
+        updateURL("");
         var url = "getProjectTPENServlet?projectID=" + projectID;
         $.ajax({
             url: url,
@@ -559,7 +560,7 @@ function loadTranscription(pid, tool){
                             break;
                         case "history" : label = "Line History";
                             break;
-                        case "linebreaking" : label = "Import Text";
+                        case "linebreak" : label = "Import Text";
                             break;
                         case "paleography" : label = false;
                             break;
@@ -688,11 +689,7 @@ function loadTranscription(pid, tool){
 
         if (localProject){
             //get project info first, get manifest out of it, populate
-            var aBar = document.location.href;
-            var toAddressBar = aBar+"?projectID=" + projectID;
-            if(aBar.indexOf("projectID=") === -1){
-                window.history.pushState("", "T-PEN Transcription", toAddressBar);
-            }
+            updateURL("");
             var url = "getProjectTPENServlet?projectID=" + projectID;
             $.ajax({
                 url: url,
@@ -877,7 +874,7 @@ function loadTranscription(pid, tool){
 function activateTool(tool){
 	// TODO: Include other tools here.
     if(tool === "parsing"){
-        if(tpen.user.isAdmin){
+        if(tpen.user.isAdmin || tpen.permissions.allow_public_modify || tpen.permissions.allow_public_modify_line_parsing){
             $("#parsingBtn").click();
             tpen.screen.liveTool = "parsing";
         }
@@ -893,14 +890,14 @@ function activateTool(tool){
 function activateUserTools(tools, permissions){
     var placeholderSplit = function(name,msg){
         $('body').append('<div id="'+name+'Split" class="split">'
-            +'<div class="fullScreenTrans">⇥ Close Tool</div>'
+            +'<div class="fullScreenTrans"><i class="fa fa-share fa-flip-vertical"></i> Close Tool</div>'
             +'<p>'+msg+'</p>'
             +'</div>');
-        $('#'+name+"Split").show();
-    }
-    if(tpen.user.isAdmin || $.inArray("parsing", tools) > -1 || permissions.allow_public_modify || permissions.allow_public_modify_line_parsing){
+        // $('#'+name+"Split").show();
+    };
+    if((tpen.user.isAdmin || permissions.allow_public_modify || permissions.allow_public_modify_line_parsing) && $.inArray("parsing", tools) > -1 ){
         $("#parsingBtn").show();
-        tpen.user.isAdmin = true; // QUESTION: #169 Why isAdmin if you can parse?
+        //tpen.user.isAdmin = true; // QUESTION: #169 Why isAdmin if you can parse? ANSWER:  Old code problem.  This has been taken out and tested.
         var message = $('<span>This canvas has no lines. If you would like to create lines</span>'
             + '<span style="color: blue;" onclick="hideWorkspaceForParsing()">click here</span>.'
             + 'Otherwise, you can <span style="color: red;" onclick="$(\'#noLineWarning\').hide()">'
@@ -909,23 +906,35 @@ function activateUserTools(tools, permissions){
         $("#noLineConfirmation").append(message);
     }
     // This is all sort of moot, since they are being built regardless at this point.
-    if($.inArray("linebreak", tools) > -1){
-        $("#linebreakSplit").show();
-    }
-    if($.inArray("history", tools) > -1){
-        // No history tool on page #114
-        placeholderSplit('history', "No tool available, ticket #114");
-    }
-    if($.inArray("preview", tools) > -1){
-        $("#previewSplit").show();
-    }
-    if($.inArray("abbreviation", tools) > -1){
-        // No abbreviation tool or endpoint available #170
-        placeholderSplit('abbrev', "No tool available, ticket #170");
-    }
-    if($.inArray("compare", tools) > -1){
-        $("#compareSplit").show();
-    }
+    //    if($.inArray("linebreak", tools) > -1){
+    //        $("#linebreakSplit").show();
+    //    }
+    //    if($.inArray("history", tools) > -1){
+    //        // No history tool on page #114
+    //        placeholderSplit('history', "No tool available, ticket #114");
+    //    }
+    //    if($.inArray("preview", tools) > -1){
+    //        $("#previewSplit").show();
+    //    }
+    //    if($.inArray("abbreviation", tools) > -1){
+    //        // No abbreviation tool or endpoint available #170
+    //        placeholderSplit('abbrev', "No tool available, ticket #170");
+    //    }
+    //    if($.inArray("compare", tools) > -1){
+    //        $("#compareSplit").show();
+    //    }
+        if($.inArray("page", tools) > -1){
+            $("#canvasControls").show();
+        }
+        if($.inArray("xml", tools) > -1){
+            $("#toggleXML").show();
+        }
+        if($.inArray("characters", tools) > -1){
+            $("#toggleChars").show();
+        }
+        if($.inArray("inspector", tools) > -1){
+            $("#magnify1").show();
+        }
 }
 
 /*
@@ -1017,14 +1026,6 @@ function loadTranscriptionCanvas(canvasObj, parsing, tool){
     $('#transcriptionTemplate').css("display", "inline-block");
     $("#parsingBtn").css("box-shadow", "none");
     $("#parsingButton").removeAttr('disabled');
-    $(".lineColIndicator").css({
-        "box-shadow": "rgba(255, 255, 255, 0.4)",
-        "border": "1px solid rgb(255, 255, 255)"
-    });
-    $(".lineColOnLine").css({
-        "border-left": "1px solid rgba(255, 255, 255, 0.2);",
-        "color": "rgb(255, 255, 255)"
-    });
     //Move up all image annos
     var cnt = - 1;
     if (canvasObj.images[0].resource['@id'] !== undefined
@@ -1039,8 +1040,12 @@ function loadTranscriptionCanvas(canvasObj, parsing, tool){
                 $('.transcriptionImage').attr('src', canvasObj.images[0].resource['@id'].replace('amp;', ''));
                 $("#fullPageImg").attr("src", canvasObj.images[0].resource['@id'].replace('amp;', ''));
                 populateCompareSplit(tpen.screen.currentFolio);
+                //FIXME At some point I had to track tpen.screen.originalCanvasHeight differently.  Not sure that
+                //I need to anymore, test making these tpen.screen.* and see what happens.
                 originalCanvasHeight2 = $("#imgTop img").height();
                 originalCanvasWidth2 = $("#imgTop img").width();
+                tpen.screen.originalCanvasHeight = $("#imgTop img").height();
+                tpen.screen.originalCanvasWidth =  $("#imgTop img").width();
                 drawLinesToCanvas(canvasObj, parsing, tool);
                 $("#transcriptionCanvas").attr("canvasid", canvasObj["@id"]);
                 $("#transcriptionCanvas").attr("annoList", canvasAnnoList);
@@ -1113,13 +1118,13 @@ function loadTranscriptionCanvas(canvasObj, parsing, tool){
  * @paran canvasObj  A canvas object to extract transcription lines from and draw to the interface.
  * @param parsing boolean if parsing is live tool
  */
-function drawLinesToCanvas(canvasObj, parsing, tool){
+function drawLinesToCanvas (canvasObj, parsing, tool) {
     var lines = [];
     var currentFolio = parseInt(tpen.screen.currentFolio);
     if (canvasObj.resources !== undefined
-        && canvasObj.resources.length > 0){
-        for (var i = 0; i < canvasObj.resources.length; i++){
-            if (isJSON(canvasObj.resources[i])){   // it is directly an annotation
+        && canvasObj.resources.length > 0) {
+        for (var i = 0; i < canvasObj.resources.length; i++) {
+            if (isJSON(canvasObj.resources[i])) {   // it is directly an annotation
                 lines.push(canvasObj.resources[i]);
             }
         }
@@ -1130,69 +1135,85 @@ function drawLinesToCanvas(canvasObj, parsing, tool){
         // If not found, then consider this an empty canvas.
         var annosURL = "getAnno";
         var onValue = canvasObj["@id"];
-        var properties = {"@type": "sc:AnnotationList", "on" : onValue, proj:tpen.project.id};
-        var paramOBJ = {"content": JSON.stringify(properties)};
-        $.post(annosURL, paramOBJ, function(annoList){
-            if (!tpen.manifest.sequences[0].canvases[currentFolio]){
-                throw new Error("Missing canvas:" +currentFolio);
-            }
-            if(!tpen.manifest.sequences[0].canvases[currentFolio].otherContent){
-                tpen.manifest.sequences[0].canvases[currentFolio].otherContent = new Array();
-            }
-            //FIXME: The line below throws a JSON error sometimes, especially on first load.
-            var annoList = tpen.manifest.sequences[0].canvases[currentFolio].otherContent = tpen.manifest.sequences[0].canvases[currentFolio].otherContent.concat(JSON.parse(annoList));
-            var currentList = {};
-
-            if (annoList.length > 0){
-                // Scrub resolved lists that are already present.
-                tpen.screen.currentAnnoListID = annoList[0]; //There should always just be one that matches because of proj, default to first in array if more
-                lines = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio], true, parsing, tool);
-//                $.each(annoList, function(index){
-//                    if (typeof annoList[index] === "string"){
-//                        // annoList is most likely an array of @ids.
-//                        for (var i = annoList.length - 1; i >= 0; i--) {
-//                            if (annoList[index] === annoList[i]["@id"]){
-//                                // found the dereferenced object, wipe this
-//                                delete annoList[index]; // above this scope
-//                                break;
-//                            }
-//                        }
-//                        lines = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio]);
-//                    }
-//                    else if (this.resources) {
-//                        lines = this.resources;
-//                        currentList = this;
-//                    } else {
-//                    	console.warn("Multiple AnnotationLists found, but '" + this + "' was not recognized.");
-//                        delete annoList[index]; // above this scope
-//                    }
-//                });
-//                annoList = tpen.manifest.sequences[0].canvases[currentFolio].otherContent
-//                = annoList.filter(function(){ // clear out empty items
-//                	return true;
-//                });
-
-
-            }
-            else {
-                // couldnt get list.  one should always exist, even if empty.
-                // We will say no list and changes will be stored locally to the canvas.
-                if (parsing !== "parsing") {
-                    $("#noLineWarning").show();
+        var properties = {
+            "@type": "sc:AnnotationList", "on": onValue, proj: tpen.project.id
+        };
+        var paramOBJ = {
+            "content": JSON.stringify(properties)
+        };
+        if ($.type(canvasObj.otherContent) === "string") {
+            $.post(annosURL, paramOBJ, function (annoList) {
+                if (!tpen.manifest.sequences[0].canvases[currentFolio]) {
+                    throw new Error("Missing canvas:" + currentFolio);
                 }
-                $("#transTemplateLoading").hide();
-                $("#transcriptionTemplate").show();
-                $('#transcriptionCanvas').css('height', $("#imgTop img").height() + "px");
-                $('.lineColIndicatorArea').css('height', $("#imgTop img").height() + "px");
-                $("#imgTop").css("height", "0%");
-                $("#imgBottom img").css("top", "0px");
-                $("#imgBottom").css("height", "inherit");
-                $("#parsingBtn").css("box-shadow", "0px 0px 6px 5px yellow");
-            }
-        });
+                if (!tpen.manifest.sequences[0].canvases[currentFolio].otherContent) {
+                    tpen.manifest.sequences[0].canvases[currentFolio].otherContent = new Array();
+                }
+                //FIXME: The line below throws a JSON error sometimes, especially on first load.
+                var annoList = tpen.manifest.sequences[0].canvases[currentFolio].otherContent = tpen.manifest.sequences[0].canvases[currentFolio].otherContent.concat(JSON.parse(annoList));
+                var currentList = {};
+            updateURL("p");
+                if (annoList.length > 0) {
+                    // Scrub resolved lists that are already present.
+                    //tpen.screen.currentAnnoListID = annoList[0]; //There should always just be one that matches because of proj, default to first in array if more
+                    lines = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio], true, parsing, tool);
+                }
+                else {
+                    // couldnt get list.  one should always exist, even if empty.
+                    // We will say no list and changes will be stored locally to the canvas.
+                    if (parsing !== "parsing") {
+                        $("#noLineWarning")
+                            .show();
+                    }
+                    $("#transTemplateLoading")
+                        .hide();
+                    $("#transcriptionTemplate")
+                        .show();
+                    $('#transcriptionCanvas')
+                        .css('height', $("#imgTop img")
+                            .height() + "px");
+                    $('.lineColIndicatorArea')
+                        .css('height', $("#imgTop img")
+                            .height() + "px");
+                    $("#imgTop")
+                        .css("height", "0%");
+                    $("#imgBottom img")
+                        .css("top", "0px");
+                    $("#imgBottom")
+                        .css("height", "inherit");
+                    $("#parsingBtn")
+                        .css("box-shadow", "0px 0px 6px 5px yellow");
+                }
+            });
+        } else if (canvasObj.otherContent && canvasObj.otherContent[0] && canvasObj.otherContent[0].resources) {
+            tpen.screen.dereferencedLists[tpen.screen.currentFolio] = tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio].otherContent[0];
+            drawLinesOnCanvas(canvasObj.otherContent[0].resources, parsing, tool);
+        }
     }
+    tpen.screen.textSize();
 }
-
+function updateURL(piece){
+    var toAddressBar = document.location.href;
+    //If nothing is passed in, just ensure the projectID is there.
+    console.log("does URL contain projectID?        "+getURLVariable("projectID"));
+    if(!getURLVariable("projectID")){
+        toAddressBar = "?projectID="+tpen.project.id;
+    }
+    //Any other variable will need to be replaced with its new value
+    if(piece === "p"){
+        if(!getURLVariable("p")){
+            console.log("Gotta add P var");
+            toAddressBar += "&p=" + tpen.project.folios[tpen.screen.currentFolio].folioNumber;
+        }
+        else{
+            console.log("Gotta update P var");
+            toAddressBar = replaceURLVariable("p", tpen.project.folios[tpen.screen.currentFolio].folioNumber);
+        }
+    }
+    console.log("push this into history and URL");
+    console.log(toAddressBar);
+    window.history.pushState("", "T-PEN Transcription", toAddressBar);
+}
 /* Take line data, turn it into HTML elements and put them to the DOM */
 function linesToScreen(lines, tool){
     $("#noLineWarning").hide();
@@ -1213,6 +1234,7 @@ function linesToScreen(lines, tool){
     var theWidth = image.width();
     $('#transcriptionCanvas').css('height', originalCanvasHeight2 + "px");
     $('.lineColIndicatorArea').css('height', originalCanvasHeight2 + "px");
+    //can i use tpen.screen.originalCanvasHeight here?
     var ratio = 0;
     //should be the same as originalCanvasWidth2/originalCanvasHeight2
     ratio = theWidth / theHeight;
@@ -1240,8 +1262,8 @@ function linesToScreen(lines, tool){
             lineID = line['@id'];
         }
         else {
-            //ERROR.  Malformed line.
-            update = false;
+            //undereferencable line.
+            lineID = line.tpen_line_id;
         }
         thisContent = "";
         if (lineURL.indexOf('#') > - 1){ //string must contain this to be valid
@@ -1460,17 +1482,19 @@ function updatePresentation(transcriptlet) {
             else{ }
             var prevLineCol = transcriptletBefore.attr("col");
             var prevLineText = unescape(transcriptletBefore.attr("data-answer"));
+            var prevLineNote = unescape(transcriptletBefore.find(".notes").attr("data-answer"));
             $("#prevColLine").html(prevLineCol + "" + currentTranscriptletNum).css("visibility","");
-            $("#captionsText").text((prevLineText.length && prevLineText) || "This line is not transcribed.");
+            $("#captionsText").text((prevLineText.length && prevLineText) || "This line is not transcribed.").attr("title",prevLineText)
+                .next().html(prevLineNote).attr("title",prevLineNote);
         }
         else { //this is a problem
             $("#prevColLine").html(prevLineCol + "" + currentTranscriptletNum).css("visibility","hidden");
-            $("#captionsText").html("You are on the first line.");
+            $("#captionsText").html("You are on the first line.").next().html("");
         }
     }
     else { //there is no previous line
         $("#prevColLine").html(prevLineCol + "" + currentTranscriptletNum).css("visibility","hidden");
-        $("#captionsText").html("ERROR.  NUMBERS ARE OFF");
+        $("#captionsText").html("ERROR.  NUMBERS ARE OFF").next().html("");
     }
     tpen.screen.focusItem[0] = tpen.screen.focusItem[1];
     tpen.screen.focusItem[1] = transcriptlet;
@@ -1491,6 +1515,22 @@ function updatePresentation(transcriptlet) {
     // prevent textareas from going invisible and not moving out of the workspace
     tpen.screen.focusItem[1].removeClass("transcriptletBefore transcriptletAfter")
         .find('.theText')[0].focus();
+    // change prev/next at page edges
+    if($(".transcriptletBefore").size()===0){
+
+        $("#prevLine").hide();
+        $("#prevPage").show();
+    } else {
+        $("#prevLine").show();
+        $("#prevPage").hide();
+    }
+    if($(".transcriptletAfter").size()===0){
+        $("#nextLine").hide();
+        $("#nextPage").show();
+    } else {
+        $("#nextLine").show();
+        $("#nextPage").hide();
+    }
 };
 
 /* Helper for position focus onto a specific transcriptlet.  Makes sure workspace stays on screen. */
@@ -1559,6 +1599,8 @@ function setPositions() {
         bottomImgPositionPx: bottomImgPositionPx,
         activeLine: pairForBookmark
     };
+    tpen.screen.imgTopPositionRatio = positions.topImgPositionPx / bottomImageHeight;
+    tpen.screen.imgBottomPositionRatio = positions.bottomImgPositionPx / bottomImageHeight;
     return positions;
 }
 
@@ -1681,16 +1723,9 @@ function adjustImgs(positions) {
     $(".lineColIndicator")
         .removeClass('activeLine')
         .css({
-            "box-shadow": "none",
             "background-color":"transparent"
         });
     lineToMakeActive.addClass("activeLine");
-    // use the active line color to give the active line a little background color
-    // to make it stand out if the box shadow is not enough.
-    var activeLineColor = tpen.screen.colorThisTime.replace("1", ".2");
-    $('.activeLine').css({
-        'box-shadow': '0px 0px 15px 8px ' + tpen.screen.colorThisTime
-    });
 }
 
 /* Update the line information of the line currently focused on, then load the focus to a line that was clicked on */
@@ -1704,7 +1739,7 @@ function loadTranscriptlet(lineid){
         }
         else {
         var captionText1 = $("#captionsText").html();
-            $("#captionsText").html("You are not logged in.");
+            $("#captionsText").html("You are not logged in.").next().html("");
             $('#captionsText').css("background-color", 'red');
             setTimeout(function(){ $('#captionsText').css("background-color", '#E6E7E8'); }, 500);
             setTimeout(function(){ $('#captionsText').css("background-color", 'red'); }, 1000);
@@ -1713,11 +1748,12 @@ function loadTranscriptlet(lineid){
     }
     else { //blink a caption warning
         var captionText = $("#captionsText").html();
-        $("#captionsText").html("Cannot load this line.");
+        var noteText = $("#note").html();
+        $("#captionsText").html("Cannot load this line.").next().html("");
         $('#captionsText').css("background-color", 'red');
         setTimeout(function(){ $('#captionsText').css("background-color", '#E6E7E8'); }, 500);
         setTimeout(function(){ $('#captionsText').css("background-color", 'red'); }, 1000);
-        setTimeout(function(){ $('#captionsText').css("background-color", '#E6E7E8'); $("#captionsText").html(captionText); }, 1500);
+        setTimeout(function(){ $('#captionsText').css("background-color", '#E6E7E8'); $("#captionsText").html(captionText).next().html(noteText); }, 1500);
     }
 }
 
@@ -1746,7 +1782,7 @@ function nextTranscriptlet() {
     }
     else { //blink a caption warning
         var captionText = $("#captionsText").html();
-        $("#captionsText").html("You are on the last line! ");
+        $("#captionsText").html("You are on the last line! ").next().html("");
         $('#captionsText').css("background-color", 'red');
         setTimeout(function(){ $('#captionsText').css("background-color", '#E6E7E8'); }, 500);
         setTimeout(function(){ $('#captionsText').css("background-color", 'red'); }, 1000);
@@ -1759,7 +1795,7 @@ function nextTranscriptlet() {
              */
 function previousTranscriptlet() {
     var prevID = parseFloat(tpen.screen.focusItem[1].attr('lineID')) - 1;
-    var currentLineServerID = tpen.screen.focusItem[1].attr("lineServerID");
+    var currentLineServerID = tpen.screen.focusItem[1].attr("lineserverid");
     if (prevID >= 0){
         if (tpen.user.UID || tpen.user.isAdmin){
             var lineToUpdate = $(".transcriptlet[lineserverid='" + currentLineServerID + "']");
@@ -2123,25 +2159,31 @@ function restoreTransition(){
 * for the selected tool.
 */
 function hideWorkspaceForParsing(){
+    tpen.screen.liveTool = "parsing";
     $("#parsingBtn").css("box-shadow: none;");
-    originalCanvasHeight = $("#transcriptionCanvas").height();
-    originalCanvasWidth = $("#transcriptionCanvas").width();
+    //    tpen.screen.originalCanvasHeight = $("#transcriptionCanvas").height(); //make sure these are set correctly
+//    tpen.screen.originalCanvasWidth = $("#transcriptionCanvas").width(); //make sure these are set correctly
     imgTopOriginalTop = $("#imgTop img").css("top");
-//    var pageJumpIcons = $("#pageJump").parent().children("i");
-//    pageJumpIcons[0].setAttribute('onclick', 'firstFolio("parsing");');
-//    pageJumpIcons[1].setAttribute('onclick', 'previousFolio("parsing");');
-//    pageJumpIcons[2].setAttribute('onclick', 'nextFolio("parsing");');
-//    pageJumpIcons[3].setAttribute('onclick', 'lastFolio("parsing");');
+    $("#transcriptionTemplate").css("max-width", "57%").css("width", "57%");
+    $("#transcriptionCanvas").css("max-height", window.innerHeight + "px");
+    $("#transcriptionTemplate").css("max-height", window.innerHeight + "px");
+    $("#controlsSplit").hide();
+    var ratio = tpen.screen.originalCanvasWidth / tpen.screen.originalCanvasHeight;
+    var newCanvasWidth = tpen.screen.originalCanvasWidth * .55;
+    var newCanvasHeight = 1 / ratio * newCanvasWidth;
+    var PAGEHEIGHT = Page.height();
+    if (newCanvasHeight > PAGEHEIGHT){
+        newCanvasHeight = PAGEHEIGHT;
+        newCanvasWidth = 1/ratio*newCanvasHeight;
+    }
+    $("#transcriptionCanvas").css("height", newCanvasHeight);
+    //$("#transcriptionCanvas").css("width", newCanvasWidth);
+
     $("#prevCanvas").attr("onclick", "");
     $("#nextCanvas").attr("onclick", "");
     $("#imgTop").addClass("fixingParsing");
     var topImg = $("#imgTop img");
-    imgRatio = topImg.width() / topImg.height();
-    var wrapWidth = imgRatio * $("#transcriptionTemplate").height();
-    var PAGEWIDTH = $("#transcriptionTemplate").width();
-    if (wrapWidth > PAGEWIDTH - 350){
-        wrapWidth = PAGEWIDTH - 350;
-    }
+
     $("#tools").children("[id$='Split']").hide();
     $("#parsingSplit")
     .css({
@@ -2149,51 +2191,75 @@ function hideWorkspaceForParsing(){
         "height": window.innerHeight + "px"
     })
     .fadeIn();
+
     topImg.css({
         "top":"0px",
         "left":"0px",
-        "height":"auto",
+        "height":newCanvasHeight+"px",
         "overflow":"auto"
     });
     $("#imgTop .lineColIndicatorArea").css({
         "top":"0px",
-        "left":"0px"
+        "left":"0px",
+        "height":newCanvasHeight+"px"
     });
-    $("#transcriptionTemplate").css("max-width", "57%");
+
+    $("#transcriptionCanvas").css("width", topImg.width());
+
     //the width and max-width here may need to be played with a bit.
+    if ($("#trascriptionTemplate").hasClass("ui-resizable")){
+        $("#transcriptionTemplate").resizable('destroy');
+    }
     $("#transcriptionTemplate").resizable({
         disabled:false,
         minWidth: window.innerWidth / 2,
-        maxWidth: window.innerWidth * .75,
+        maxWidth: window.innerWidth * .55,
         start: function(event, ui){
-            originalRatio = $("#transcriptionCanvas").width() / $("#transcriptionCanvas").height();
+            detachWindowResize();
         },
         resize: function(event, ui) {
+            console.log("resize 1");
             var width = ui.size.width;
-            var height = 1 / originalRatio * width;
-            $("#transcriptionCanvas").css("height", height + "px").css("width", width + "px");
-            $(".lineColIndicatorArea").css("height", height + "px");
-            var splitWidth = window.innerWidth - (width + 35) + "px";
+            var height = 1 / ratio * width;
+            newCanvasWidth = 1/ratio*height;
+            if (height > PAGEHEIGHT){
+                height = PAGEHEIGHT;
+                newCanvasWidth = 1/ratio*height;
+            }
+//            console.log(originalCanvasHeight, originalCanvasWidth, height, newCanvasWidth, originalRatio );
+            //$(".lineColIndicatorArea").css("height", height + "px");
+            var splitWidth = Page.width() - (width + 35) + "px";
             $(".split img").css("max-width", splitWidth);
             $(".split:visible").css("width", splitWidth);
+            $("#transcriptionCanvas").css("height", height + "px");//.css("width", newCanvasWidth + "px")
+            $("#imgTop img").css({
+                'height': height + "px",
+                'top': "0px"
+//                'width' : $("#imgTop img").width()
+            });
+            $("#imgTop").css({ //This width will not change when the area is expanded, but does when it is shrunk.  We need to do the math to grow it.
+                'height': $("#imgTop img").height(),
+                'width': tpen.screen.imgTopSizeRatio * $("#imgTop img").height() + "px" //This locks up and does not change.
+            });
             tpen.screen.textSize();
         },
         stop: function(event, ui){
+            attachWindowResize();
             //$(".lineColIndicator .lineColOnLine").css("line-height", $(this).height()+"px");
         }
     });
     $("#transWorkspace,#imgBottom").hide();
     $("#noLineWarning").hide();
     window.setTimeout(function(){
-        $("#imgTop, #imgTop img").height($(window).innerHeight());
         $("#imgTop img").css("width", "auto");
+        $("#imgTop img").css("top", "0px");
         $("#imgTop").css("width", $("#imgTop img").width());
+        $("#transcriptionCanvas").css("width", $("#imgTop img").width() + "px"); //fits canvas to image.
+        $("#transcriptionTemplate").css("width", "55%"); //fits canvas to image. $("#imgTop img").width() + "px".  Do we need a background color?
         $("#imgTop").css("height", $("#imgTop img").height());
-        //At this point, transcription canvas is the original height and width
-        //of the full page image.  We can use that for when we resume transcription.
-        $("#transcriptionCanvas").css("height", $(window).innerHeight());
-        $(".lineColIndicatorArea").css("height", $(window).innerHeight());
         $("#transcriptionCanvas").css("display", "block");
+        tpen.screen.imgTopSizeRatio = $("#imgTop img").width() / $("#imgTop img").height();
+        $("#templateResizeBar").show();
     }, 500);
     window.setTimeout(function(){
         //in here we can control what interface loads up.  writeLines
@@ -2294,10 +2360,13 @@ function fullPage(){
     $("#splitScreenTools").find('option:eq(0)').prop("selected", true);
     $("#transcriptionCanvas").css("width", "100%");
     $("#transcriptionCanvas").css("height", "auto"); //Need a real height here, it can't be auto.  It needs to be the height of the image.
+    $("#transcriptionCanvas").css("max-height", "none"); //Need a real height here, it can't be auto.  It needs to be the height of the image.
     $("#transcriptionTemplate").css("width", "100%");
     $("#transcriptionTemplate").css("max-width", "100%");
+    $("#transcriptionTemplate").css("max-height", "none");
     $("#transcriptionTemplate").css("height", "auto");
     $("#transcriptionTemplate").css("display", "inline-block");
+    $('.lineColIndicatorArea').css("max-height","none");
     $('.lineColIndicatorArea').show();
     $("#help").css({"left":"100%"}).fadeOut(1000);
     $("#fullScreenBtn").fadeOut(250);
@@ -2307,93 +2376,121 @@ function fullPage(){
     restoreWorkspace();
     $("#splitScreenTools").show();
     var screenWidth = $(window).width();
-    var adjustedHeightForFullscreen = (originalCanvasHeight2 / originalCanvasWidth2) * screenWidth;
-    $("#transcriptionCanvas").css("height", adjustedHeightForFullscreen + "px");
-    $(".lineColIndicatorArea").css("height", adjustedHeightForFullscreen + "px");
+    var adjustedHeightForFullscreen = (tpen.screen.originalCanvasHeight / tpen.screen.originalCanvasWidth) * screenWidth;
+    $("#transcriptionCanvas").css("height", tpen.screen.originalCanvasHeight + "px");
+    $(".lineColIndicatorArea").css("height", tpen.screen.originalCanvasHeight + "px");
     var lineColor = tpen.screen.colorThisTime.replace(".4", ".9");
-    $("#imgTop").hover(
-       function(){
-            $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor);
-        },
-        function(){
-            var lineColor2 = lineColor.replace(".9", ".4");
-            $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor2);
-        }
-    );
+//     $("#imgTop").hover(
+//        function(){
+//             $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor);
+//         },
+//         function(){
+//             var lineColor2 = lineColor.replace(".9", ".4");
+//             $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor2);
+//         }
+//     );
 
-    $("#imgBottom").hover(
-        function(){
-            $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor);
-        },
-        function(){
-            var lineColor2 = lineColor.replace(".9", ".4");
-            $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor2);
-        }
-    );
+//     $("#imgBottom").hover(
+//         function(){
+//             $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor);
+//         },
+//         function(){
+//             var lineColor2 = lineColor.replace(".9", ".4");
+//             $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor2);
+//         }
+//     );
 
     $.each($(".lineColOnLine"), function(){
         $(this).css("line-height", $(this).height() + "px");
     });
     if (tpen.screen.focusItem[0] == null
         && tpen.screen.focusItem[1] == null){
-        updatePresentation($("#transcriptlet_1"));
+        updatePresentation($("#transcriptlet_0"));
     }
+     //FIXME: If there is no delay here, it does not draw correctly.  Should not use setTimeout.
+    if(tpen.screen.liveTool === "parsing"){
+        $("#transcriptionTemplate").hide();
+        $("#transTemplateLoading").show();
+        setTimeout(function(){
+            redraw("");
+        }, 1000);
+    }
+    tpen.screen.liveTool = "none";
+
 }
 
 function splitPage(event, tool) {
     tpen.screen.liveTool = tool;
-    originalCanvasHeight = $("#transcriptionCanvas").height(); //make sure these are set correctly
-    originalCanvasWidth = $("#transcriptionCanvas").width(); //make sure these are set correctly
-    var ratio = originalCanvasWidth / originalCanvasHeight;
-    $("#splitScreenTools").attr("disabled", "disabled");
-    var imgBottomRatio = parseFloat($("#imgBottom img").css("top")) / originalCanvasHeight;
-    var imgTopRatio = parseFloat($("#imgTop img").css("top")) / originalCanvasHeight;
+    var resize = true;
+    var newCanvasWidth = tpen.screen.originalCanvasWidth * .55;
     $("#transcriptionTemplate").css({
         "width"   :   "55%",
         "display" : "inline-table"
     });
-    var newCanvasWidth = originalCanvasWidth2 * .55;
+    $("#templateResizeBar").show();
+    if(tool==="controls"){
+        console.log("Do not attach resizable from splitPage");
+        $("#transcriptionCanvas").css("width", Page.width()-200 + "px");
+        $("#transcriptionTemplate").css("width", Page.width()-200 + "px");
+        newCanvasWidth = Page.width()-200;
+        $("#controlsSplit").show();
+        resize = false; //interupts parsing resizing funcitonaliy, dont need to resize for this anyway.
+    }
+    var ratio = tpen.screen.originalCanvasWidth / tpen.screen.originalCanvasHeight;
+    $("#splitScreenTools").attr("disabled", "disabled");
     var newCanvasHeight = 1 / ratio * newCanvasWidth;
+    if(tool)
     $("#transcriptionCanvas").css({
         "width"   :   newCanvasWidth + "px",
         "height"   :   newCanvasHeight + "px"
     });
-    var newImgBtmTop = imgBottomRatio * newCanvasHeight;
-    var newImgTopTop = imgTopRatio * newCanvasHeight;
+    var newImgBtmTop = tpen.screen.imgBottomPositionRatio * newCanvasHeight;
+    var newImgTopTop = tpen.screen.imgTopPositionRatio * newCanvasHeight;
+    //$(".lineColIndicatorArea").css("max-height", newCanvasHeight + "px");
     $(".lineColIndicatorArea").css("height", newCanvasHeight + "px");
     $("#imgBottom img").css("top", newImgBtmTop + "px");
     $("#imgBottom .lineColIndicatorArea").css("top", newImgBtmTop + "px");
     $("#imgTop img").css("top", newImgTopTop + "px");
     $("#imgTop .lineColIndicatorArea").css("top", newImgTopTop + "px");
+    var originalRatio = ratio;
     $.each($(".lineColOnLine"), function(){$(this).css("line-height", $(this).height() + "px"); });
-
-    $("#transcriptionTemplate").resizable({
-        disabled:false,
-        minWidth: window.innerWidth / 2,
-        maxWidth: window.innerWidth * .75,
-        start: function(event, ui){
-            originalRatio = $("#transcriptionCanvas").width() / $("#transcriptionCanvas").height();
-        },
-        resize: function(event, ui) {
-            var width = ui.size.width;
-            var height = 1 / originalRatio * width;
-            $("#transcriptionCanvas").css("height", height + "px").css("width", width + "px");
-            $(".lineColIndicatorArea").css("height", height + "px");
-            var splitWidth = window.innerWidth - (width + 35) + "px";
-            $(".split img").css("max-width", splitWidth);
-            $(".split:visible").css("width", splitWidth);
-            var newHeight1 = parseFloat($("#fullPageImg").height()) + parseFloat($("#fullPageSplit .toolLinks").height());
-            var newHeight2 = parseFloat($(".compareImage").height()) + parseFloat($("#compareSplit .toolLinks").height());
-            $('#fullPageSplit').css('height', newHeight1 + 'px');
-            $('#compareSplit').css('height', newHeight2 + 'px');
-        },
-        stop: function(event, ui){
-            $.each($(".lineColOnLine"), function(){
-                var height = $(this).height() + "px";
-                $(this).css("line-height", height);
-            });
-        }
-    });
+    if(resize){
+        $("#transcriptionTemplate").resizable({
+            disabled:false,
+            minWidth: window.innerWidth / 2,
+            maxWidth: window.innerWidth * .75,
+            start: function(event, ui){
+                detachWindowResize();
+            },
+            resize: function(event, ui) {
+                console.log("resize 2");
+                var width = ui.size.width;
+                var height = 1 / originalRatio * width;
+                $("#transcriptionCanvas").css("height", height + "px").css("width", width + "px");
+                $(".lineColIndicatorArea").css("height", height + "px");
+                var splitWidth = window.innerWidth - (width + 35) + "px";
+                $(".split img").css("max-width", splitWidth);
+                $(".split:visible").css("width", splitWidth);
+                var newHeight1 = parseFloat($("#fullPageImg").height()) + parseFloat($("#fullPageSplit .toolLinks").height());
+                var newHeight2 = parseFloat($(".compareImage").height()) + parseFloat($("#compareSplit .toolLinks").height());
+                $('#fullPageSplit').css('height', newHeight1 + 'px');
+                $('#compareSplit').css('height', newHeight2 + 'px');
+                newImgBtmTop = tpen.screen.imgBottomPositionRatio * height;
+                newImgTopTop = tpen.screen.imgTopPositionRatio * height;
+                $("#imgBottom img").css("top", newImgBtmTop + "px");
+                $("#imgBottom .lineColIndicatorArea").css("top", newImgBtmTop + "px");
+                $("#imgTop img").css("top", newImgTopTop + "px");
+                $("#imgTop .lineColIndicatorArea").css("top", newImgTopTop + "px");
+            },
+            stop: function(event, ui){
+                attachWindowResize();
+                $.each($(".lineColOnLine"), function(){
+                    var height = $(this).height() + "px";
+                    $(this).css("line-height", height);
+                });
+            }
+        });
+    }
     $("#fullScreenBtn")
         .fadeIn(250);
         $('.split').hide();
@@ -2408,9 +2505,7 @@ function splitPage(event, tool) {
             'max-width': $(".split:visible")
                 .width() + "px"
         });
-        if(tool==="controls"){
-            $("#transcriptionCanvas").css("width", Page.width()-200 + "px");
-        }
+
 }
 
 function forceOrderPreview(){
@@ -2600,6 +2695,7 @@ function adjustColumn(event){
         handles     : "n,s,w,e",
         containment : 'parent',
         start       : function(event, ui){
+            detachWindowResize();
             $("#progress").html("Adjusting Columns - unsaved").fadeIn();
             $("#columnResizing").show();
             $("#sidebar").fadeIn();
@@ -2631,6 +2727,7 @@ function adjustColumn(event){
             }
         },
         stop        : function(event, ui){
+            attachWindowResize();
             $("#progress").html("Column Resized - Saving...");
             var parseRatio = $("#imgTop img").width() / $("#imgTop img").height();
             var originalX = ui.originalPosition.left;
@@ -3127,17 +3224,24 @@ function markerColors(){
  * colorThisTime
  */
     var tempColorList = ["rgba(153,255,0,.4)", "rgba(0,255,204,.4)", "rgba(51,0,204,.4)", "rgba(204,255,0,.4)", "rgba(0,0,0,.4)", "rgba(255,255,255,.4)", "rgba(255,0,0,.4)"];
-    if (tpen.screen.colorList.length == 0){
+    if (tpen.screen.colorList.length === 0){
         tpen.screen.colorList = tempColorList;
     }
-    tpen.screen.colorThisTime = tpen.screen.colorList[Math.floor(Math.random() * tpen.screen.colorList.length)];
-    tpen.screen.colorList.splice(tpen.screen.colorList.indexOf(tpen.screen.colorThisTime), 1);
-    var oneToChange = tpen.screen.colorThisTime.lastIndexOf(")") - 2;
-    var borderColor = tpen.screen.colorThisTime.substr(0, oneToChange) + '.2' + tpen.screen.colorThisTime.substr(oneToChange + 1);
-    var lineColor = tpen.screen.colorThisTime.replace(".4", ".9"); //make this color opacity 100
-    $('.lineColIndicator').css('border', '1px solid ' + lineColor);
-    $('.lineColOnLine').css({'border-left':'1px solid ' + borderColor, 'color':lineColor});
-    $('.activeLine').css('box-shadow', '0px 0px 15px 8px ' + tpen.screen.colorThisTime); //keep this color opacity .4 until imgTop is hovered.
+    var index = tpen.screen.colorList.indexOf(tpen.screen.colorThisTime);
+    if(index++>tpen.screen.colorList.length){
+        index = 0;
+    }
+    var color = tpen.screen.colorThisTime = tpen.screen.colorList[index];
+//    var oneToChange = tpen.screen.colorThisTime.lastIndexOf(")") - 2;
+//    var borderColor = tpen.screen.colorThisTime.substr(0, oneToChange) + '.2' + tpen.screen.colorThisTime.substr(oneToChange + 1);
+//    var lineColor = tpen.screen.colorThisTime.replace(".4", ".9"); //make this color opacity 100
+    $('.lineColIndicator').css('border', '1px solid ' + color);
+    $('.lineColOnLine').css({'border-left':'1px solid ' + color, 'color':color});
+    $('.activeLine').css({
+//        'box-shadow' : '0px 0px 15px 8px ' + color,
+        'box-shadow' : '0 0 15px black',
+        'opacity' : .4
+    }); //keep this color opacity .4 until imgTop is hovered.
 }
 
 /* Toggle the line/column indicators in the transcription interface. (A1, A2...) */
@@ -3188,7 +3292,7 @@ function batchLineUpdate(linesInColumn, relocate){
     var currentAnnoListID = tpen.screen.currentAnnoListID;
     var currentAnnoListResources = [];
     var lineTop, lineLeft, lineWidth, lineHeight = 0;
-    var ratio = originalCanvasWidth2 / originalCanvasHeight2;
+    var ratio = originalCanvasWidth2 / originalCanvasHeight2; //Can I use tpen.screen.originalCanvasHeight and Width?
     var currentAnnoList = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio], false, false);
         //Go over each line from the column resize.
     $.each(linesInColumn, function(){
@@ -3274,14 +3378,19 @@ function batchLineUpdate(linesInColumn, relocate){
             $("#imgBottom").css("height", "inherit");
             $("#parsingBtn").css("box-shadow", "0px 0px 6px 5px yellow");
         }
+        updateURL("p");
     }
 
     function getList(canvas, drawFlag, parsing, tool){ //this could be the @id of the annoList or the canvas that we need to find the @id of the list for.
         var lists = [];
         var annos = [];
+        if(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio].otherContent[0].resources){
+            tpen.screen.dereferencedLists[tpen.screen.currentFolio] = tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio].otherContent[0];
+            return tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio].otherContent[0].resources;
+        }
         if(tpen.screen.dereferencedLists[tpen.screen.currentFolio]){
             annos = tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources;
-            tpen.screen.currentAnnoListID = tpen.screen.dereferencedLists[tpen.screen.currentFolio]["@id"];
+            //tpen.screen.currentAnnoListID = tpen.screen.dereferencedLists[tpen.screen.currentFolio]["@id"];
             if(drawFlag){
                 drawLinesOnCanvas(annos, parsing, tool);
             }
@@ -3333,6 +3442,7 @@ function updateLine(line, cleanup, updateList){
     var currentAnnoList = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio], false, false);
     var lineTop, lineLeft, lineWidth, lineHeight = 0;
     var ratio = originalCanvasWidth2 / originalCanvasHeight2;
+    //Can I use tpen.screen.originalCanvasHeight and Width?  IDK yet, untested.
 
     lineTop = parseFloat(line.attr("linetop")) * 10;
     lineLeft = parseFloat(line.attr("lineleft")) * (10 * ratio);
@@ -3349,7 +3459,15 @@ function updateLine(line, cleanup, updateList){
     var currentLineNotes = $(".transcriptlet[lineserverid='" + currentLineServerID + "']").find(".notes").val();
     var currentLineTextAttr = unescape(line.attr("data-answer"));
     var currentLineNotesAttr = unescape(line.find(".notes").attr("data-answer"));
-    var currentAnnoListID = tpen.screen.currentAnnoListID;
+    var params = new Array({name:'submitted',value:true},{name:'folio',value:tpen.project.folios[tpen.screen.currentFolio].folioNumber},{name:'projectID',value:tpen.project.id});
+    var params2 = new Array({name:'submitted',value:true},{name:'projectID',value:tpen.project.id});
+    var updateContent = false;
+    var updatePositions = false;
+    if(tpen.screen.liveTool === "parsing"){
+        //OR it was from bump line in the trasncription interface.  How do I detect that?  This is overruled below until we figure that out.
+        updatePositions = true;
+    }
+//    var currentAnnoListID = tpen.screen.currentAnnoListID;
     var dbLine = {
         "@id" : currentLineServerID,
         "@type" : "oa:Annotation",
@@ -3364,55 +3482,71 @@ function updateLine(line, cleanup, updateList){
         "_tpen_note" : currentLineNotes,
         "testing":"TPEN28"
     };
-    if (!currentAnnoListID){
-        if(!currentAnnoList){
-            throw new Error("No annotation list found.");
-        } else if (typeof currentAnnoList==="string"){
-            // unlikely, but just in case
-            $.getJSON(currentAnnoList,function(list){
-                tpen.screen.currentAnnoList = tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio].otherContent[tpen.screen.currentAnnoList] = list;
-                return updateLine(line, cleanup, updateList);
-            }).fail(function(err){
-                throw err;
-            });
-        } else if ($.isArray(currentAnnoList.resources)){
-            throw new Error("Everything looks good, but it didn't work.");
-        } else {
-            throw new Error("Annotation List was not recognized.");
+//    if (!currentAnnoListID){ //BH 12/21/16 we need to skip this check now since we don't have a anno list ID anymore
+//        if(!currentAnnoList){
+//            throw new Error("No annotation list found.");
+//        } else if (typeof currentAnnoList==="string"){
+//            // unlikely, but just in case
+//            $.getJSON(currentAnnoList,function(list){
+//                tpen.screen.currentAnnoList = tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio].otherContent[tpen.screen.currentAnnoList] = list;
+//                return updateLine(line, cleanup, updateList);
+//            }).fail(function(err){
+//                throw err;
+//            });
+//        } else if ($.isArray(currentAnnoList.resources)){
+//            throw new Error("Everything looks good, but it didn't work.");
+//        } else {
+//            throw new Error("Annotation List was not recognized.");
+//        }
+//    }
+//    else if (currentAnnoListID){
+        var lineID = (line != null) ? $(line).attr("lineserverid") : -1;
+        lineID = parseInt(lineID.replace("line/", "")); //TODO check this in the future to make sure you are getting the lineID and not some string here.
+        if (lineID>0 || $(line).attr("id")=="dummy"){
+            params.push(
+                {name:"updatey",value:lineTop},
+                {name:"updatex",value:lineLeft},
+                {name:"updatewidth",value:lineWidth},
+                {name:"updateheight",value:lineHeight},
+                {name:"update",value:lineID}
+            );
+            updatePositions = true; //This will always be true, which we want right now.  Up at the top there is a check for it, but I need the OR to make it happen.
         }
-    }
-    else if (currentAnnoListID){
-        if(currentLineServerID.startsWith("http")){
-            //var url = "http://165.134.241.141/annotationstore/anno/updateAnnotation.action"; //This gets a 403 Forbidden....
-            var url = "updateAnnoList";
-            var payload = { // Just send what we expect to update
-                    content : JSON.stringify({
-                    "@id" : dbLine['@id'],			// URI to find it in the repo
-                    "resource" : dbLine.resource,	// the transcription content
-                    "on" : dbLine.on,
-                    "_tpen_note": dbLine._tpen_note// parsing update of xywh=
-            	})
-            };
-            if(updateList){
-                var url1 = "updateAnnoList";
-                clearTimeout(typingTimer);
-                for(var i=0  ;i < currentAnnoList.length; i++){
-                    if(currentAnnoList[i]["@id"] === dbLine['@id']){
-                        currentAnnoList[i].on = dbLine.on;
-                        currentAnnoList[i].resource = dbLine.resource;
-                        currentAnnoList[i]._tpen_note = dbLine._tpen_note;
-                    }
-                    if(i===currentAnnoList.length -1){
-                        tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources = currentAnnoList;
-                        var paramObj1 = {"@id":tpen.screen.currentAnnoListID, "resources": currentAnnoList};
-                        var params1 = {"content":JSON.stringify(paramObj1)};
-                        $.post(url1, params1, function(data){
-                        });
-                    }
+        else{
+            updatePositions = false;
+        }
+        //isDestroyingLine = false;
+//        if(currentLineServerID.startsWith("http")){ //@cubap FIXME: do we need this check anymore?
+        var url = "updateLinePositions"; //updateAnnoList
+        var url2 = "updateLineServlet";
+//            var payload = { // Just send what we expect to update
+//                    content : JSON.stringify({
+//                    "@id" : dbLine['@id'],			// URI to find it in the repo
+//                    "resource" : dbLine.resource,	// the transcription content
+//                    "on" : dbLine.on,
+//                    "_tpen_note": dbLine._tpen_note// parsing update of xywh=
+//            	})
+ //           }
+            //var url1 = "updateAnnoList";
+            clearTimeout(typingTimer);
+            for(var i=0  ;i < currentAnnoList.length; i++){
+                if(currentAnnoList[i]["@id"] === dbLine['@id']){
+                    currentAnnoList[i].on = dbLine.on;
+                    currentAnnoList[i].resource = dbLine.resource;
+                    currentAnnoList[i]._tpen_note = dbLine._tpen_note; //@cubap FIXME:  How do we handle notes now?
+                }
+                if(i===currentAnnoList.length -1){
+                    tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources = currentAnnoList;
+//                    var paramObj1 = {"@id":tpen.screen.currentAnnoListID, "resources": currentAnnoList};
+//                    var params1 = {"content":JSON.stringify(paramObj1)};
+//                    $.post(url1, params1, function(data){
+//                    });
                 }
             }
+
             if(currentLineText === currentLineTextAttr && currentLineNotes === currentLineNotesAttr){
                 //This line's text has not changed, and neither does the notes
+                updateContent = false;
                 $("#saveReport")
                 .stop(true,true).animate({"color":"red"}, 400)
                 .prepend("<div class='noChange'>No changes made</div>")//
@@ -3420,6 +3554,10 @@ function updateLine(line, cleanup, updateList){
                 $("#saveReport").find(".nochanges").show().fadeOut(2000);
             }
             else{ //something about the line text or note text has changed.
+                params2.push({name:"comment", value:currentLineNotes});
+                params2.push({name:"text", value:currentLineText});
+                params2.push({name:"line",value:lineID});
+                updateContent = true;
                 var columnMark = "Column&nbsp;"+line.attr("col")+"&nbsp;Line&nbsp;"+line.attr("collinenum");
                 var date=new Date();
                 $("#saveReport")
@@ -3429,32 +3567,41 @@ function updateLine(line, cleanup, updateList){
             }
             line.attr("data-answer", currentLineText);
             line.find(".notes").attr("data-answer", currentLineNotes);
-            $.post(url,payload,function(){
-            	line.attr("hasError",null);
-                $("#parsingCover").hide();
-            	// success
-            }).fail(function(err){
-            	line.attr("hasError","Saving Failed "+err.status);
-            	throw err;
-            });
-        } else {
-            throw new Error("No good. The ID could not be dereferenced. Maybe this is a new annotation?");
-        }
+            //FIXME: REST says this should be PUT
+
+            //@cubap 12/21/16 FIXME: Is it ok to run this after every line change or typingTimer no matter what, or should there be a check for change?
+            if(updatePositions){
+                $.post(url,params,function(){
+                    line.attr("hasError",null);
+                    $("#parsingCover").hide();
+                    // success
+                }).fail(function(err){
+                    line.attr("hasError","Saving Failed "+err.status);
+                    throw err;
+                });
+            }
+            if(updateContent){
+                $.post(url2,params2,function(){
+                    line.attr("hasError",null);
+                    $("#parsingCover").hide();
+                    // success
+                }).fail(function(err){
+                    line.attr("hasError","Saving Failed "+err.status);
+                    throw err;
+                });
+            }
+//        } else {
+//            throw new Error("No good. The ID could not be dereferenced. Maybe this is a new annotation?");
+//        }
+        //I am not sure if cleanup is ever true
+        if (cleanup) cleanupTranscriptlets(true);
+        updateClosingTags();
     }
-    //I am not sure if cleanup is ever true
-    if (cleanup) cleanupTranscriptlets(true);
-    updateClosingTags();
-}
+
+
 
 function saveNewLine(lineBefore, newLine){
-    var theURL = window.location.href;
-    var projID = - 1;
-    if (theURL.indexOf("projectID") === - 1){
-        projID = tpen.project.id;
-    }
-    else{
-        projID = getURLVariable("projectID");
-    }
+    var projID = tpen.project.id;
     var beforeIndex = - 1;
     if (lineBefore !== undefined && lineBefore !== null){
         beforeIndex = parseInt(lineBefore.attr("linenum"));
@@ -3463,6 +3610,7 @@ function saveNewLine(lineBefore, newLine){
     var newLineTop, newLineLeft, newLineWidth, newLineHeight = 0;
     var oldLineTop, oldLineLeft, oldLineWidth, oldLineHeight = 0;
     var ratio = originalCanvasWidth2 / originalCanvasHeight2;
+    //Can I use tpen.screen.originalCanvasHeight and Width?
     newLineTop = parseFloat(newLine.attr("linetop"));
     newLineLeft = parseFloat(newLine.attr("lineleft"));
     newLineWidth = parseFloat(newLine.attr("linewidth"));
@@ -3510,17 +3658,22 @@ function saveNewLine(lineBefore, newLine){
         "_tpen_creator" : tpen.user.UID,
         "testing":"TPEN28"
     };
-    var url = "saveNewTransLineServlet";
-    var paramOBJ = dbLine;
-    var params = {"content" : JSON.stringify(paramOBJ)};
+    var url = "updateLinePositions"; //saveNewTransLineServlet
+    var params = new Array(
+        {name:"newy",value:newLineTop},
+        {name:"newx",value:newLineLeft},
+        {name:"newwidth",value:newLineWidth},
+        {name:"newheight",value:newLineHeight},
+        {name:"new",value:true}
+    );
     if (onCanvas !== undefined && onCanvas !== ""){
         $.post(url, params, function(data){
             data = JSON.parse(data);
-            dbLine["@id"] = data["@id"];
-            newLine.attr("lineserverid", data["@id"]);
+            dbLine["@id"] = data;
+            newLine.attr("lineserverid", data); //data["@id"]
             $("div[newcol='" + true + "']").attr({
-                "startid" : dbLine["@id"],
-                "endid" : dbLine["@id"],
+                "startid" : data, //dbLine["@id"]
+                "endid" : data, //dbLine["@id"]
                 "newcol":false
             });
             var currentFolio = tpen.screen.currentFolio;
@@ -3529,34 +3682,37 @@ function saveNewLine(lineBefore, newLine){
                 // if it IIIF, we need to update the list
                 if (beforeIndex == - 1){
                     $(".newColumn").attr({
-                        "lineserverid" : dbLine["@id"],
+                        "lineserverid" : data,
                         "linenum" : $(".parsing").length
                     }).removeClass("newColumn");
-                    currentAnnoList.push(dbLine);
+                    currentAnnoList.push(dbLine); //@cubap FIXME: what should we do for dbLine here?  What does the currentAnnoList look like.
                 }
                 else {
-                    currentAnnoList.splice(beforeIndex + 1, 0, dbLine);
+                    currentAnnoList.splice(beforeIndex + 1, 0, dbLine); //@cubap FIXME: what should we do for dbLine here?  What does the currentAnnoList look like?
                     currentAnnoList[beforeIndex].on = updateLineString;
                 }
                 currentFolio = parseInt(currentFolio);
                 //Write back to db to update list
-                tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources = currentAnnoList;
-                var url1 = "updateAnnoList";
-                var paramObj1 = {"@id":tpen.screen.currentAnnoListID, "resources": currentAnnoList};
-                var params1 = {"content":JSON.stringify(paramObj1)};
-                $.post(url1, params1, function(data){
-                    if (lineBefore !== undefined && lineBefore !== null){
-                        //This is the good case.  We called split line and saved
-                        //the new line, now we need to update the other one.
-                        updateLine(lineBefore, false, false); //This will update the line on the server.
-                    }
-                    else{
-                    }
-                        $("#parsingCover").hide();
-                });
+                tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources = currentAnnoList; //@cubap this is why the FIXMEs above
+                updateLine(lineBefore, false, false); //This will update the line on the server.
+                $("#parsingCover").hide();
+//                var url1 = "updateAnnoList";
+//                var paramObj1 = {"@id":tpen.screen.currentAnnoListID, "resources": currentAnnoList};
+//                var params1 = {"content":JSON.stringify(paramObj1)};
+//                $.post(url1, params1, function(data){
+//                    if (lineBefore !== undefined && lineBefore !== null){
+//                        //This is the good case.  We called split line and saved
+//                        //the new line, now we need to update the other one.
+//
+//                    }
+//                    else{
+//                    }
+//                        $("#parsingCover").hide();
+//                });
 
             }
-            else if (currentAnnoList == "empty"){
+            /*
+            else if (currentAnnoList == "empty"){ //Not sure we need to handle this with the roll back.
                 //This means we know no AnnotationList was on the store for this canvas,
                 //and otherContent stored with the canvas object did not have the list.
                 // Make a new one in this case.
@@ -3595,6 +3751,7 @@ function saveNewLine(lineBefore, newLine){
                     });
                 });
             }
+            */
             else if (currentAnnoList == "noList"){
                 //noList is a special scenario for handling classic T-PEN objects.
                 if (beforeIndex == - 1){ //New line vs new column
@@ -4278,6 +4435,24 @@ function getURLVariable(variable)
        return(false);
 }
 
+function replaceURLVariable(variable, value){
+       var query = window.location.search.substring(1);
+       var location = window.location.origin + window.location.pathname;
+       var vars = query.split("&");
+       var variables = "";
+       for (var i=0;i<vars.length;i++) {
+        var pair = vars[i].split("=");
+        if(pair[0] == variable){
+            var newVar = pair[0]+"="+value;
+            vars[i] = newVar;
+            break;
+        }
+       }
+       variables = vars.toString();
+       variables = variables.replace(",", "&");
+       return(location + "?"+variables);
+}
+
 var Data = {
     /* Save all lines on the canvas */
     saveTranscription:function(relocate){
@@ -4841,7 +5016,7 @@ var Help = {
                 }
             });
     }
-}
+};
     $("#previewSplit")
         .on("click",".previewText,.previewNotes",function(){Preview.edit(this);})
         .on("click","#previewNotes",function(){
@@ -4858,6 +5033,188 @@ var Help = {
             }
             Preview.scrollToCurrentPage();
         });
+tpen.screen.peekZoom = function(cancel){
+        var topImg = $("#imgTop img");
+        var btmImg = $("#imgBottom img");
+        var imgSrc = topImg.attr("src");
+        if(imgSrc.indexOf("imageResize?">-1 && imgSrc.indexOf("height=1000")>-1)){
+    imgSrc=imgSrc.replace("height=1000","height=2000");
+    }
+        if (imgSrc.indexOf("quality") === -1) {
+            imgSrc += "&quality=100";
+            topImg.add(btmImg).attr("src",imgSrc);
+        }
+        var WRAPWIDTH = $("#transcriptionCanvas").width();
+        var availableRoom = new Array (Page.height(),WRAPWIDTH);
+        var line = $(".activeLine");
+        var limitIndex = (line.width()/line.height()> availableRoom[1]/availableRoom[0]) ? 1 : 0;
+        var zoomRatio = (limitIndex === 1) ? availableRoom[1]/line.width() : availableRoom[0]/line.height();
+        var imgDims = new Array (topImg.height(),topImg.width(),parseInt(topImg.css("left")),-line.position().top);
+        if (!cancel){
+            //zoom in
+            $(".lineColIndicatorArea").fadeOut();
+            tpen.screen.peekMemory = [parseInt(topImg.css("top")),parseInt(btmImg.css("top")),$("#imgTop").height()];
+            $("#imgTop").css({
+                "height"    : line.height() * zoomRatio + "px"
+            });
+            topImg.css({
+                "width"     : imgDims[1] * zoomRatio + "px",
+                "left"      : -line.position().left * zoomRatio,
+                "top"       : imgDims[3] * zoomRatio,
+                "max-width" : imgDims[1] * zoomRatio / WRAPWIDTH * 100 + "%"
+            });
+            btmImg.css({
+                "left"      : -line.position().left * zoomRatio,
+                "top"       : (imgDims[3]-line.height()) * zoomRatio,
+                "width"     : imgDims[1] * zoomRatio + "px",
+                "max-width" : imgDims[1] * zoomRatio / WRAPWIDTH * 100 + "%"
+            });
+            tpen.screen.isPeeking = true;
+        } else {
+            //zoom out
+            topImg.css({
+                "width"     : "100%",
+                "left"      : 0,
+                "top"       : tpen.screen.peekMemory[0],
+                "max-width" : "100%"
+            });
+            btmImg.css({
+                "width"     : "100%",
+                "left"      : 0,
+                "top"       : tpen.screen.peekMemory[1],
+                "max-width" : "100%"
+            });
+            $("#imgTop").css({
+                "height"    : tpen.screen.peekMemory[2]
+            });
+            $(".lineColIndicatorArea").fadeIn();
+            tpen.screen.isPeeking = false;
+        }
+    };
+
+    /* Clear the resize function attached to the window element. */
+    function detachWindowResize(){
+        console.log("window resize detached");
+        window.onresize = function(event, ui){
+            console.log("detach");
+        };
+    }
+
+    //Must explicitly set new height and width for percentages values in the DOM to take effect.
+    //FIXME: Does not handle resizing the split area correctly except for in parsing interface.
+    //FIXME: If you look at project 4080, you will notice that sometimes the annotation will slip off screen
+    //FIXME: Gets in the way of transcriptionTemplate resizing.
+    //with resizing because the img top position puts it up off screen a little.
+    function attachWindowResize(){
+        console.log("window resize attached");
+        window.onresize = function(event, ui) {
+            console.log("window resize detected.  "+tpen.screen.liveTool+" is active tool.");
+            var newImgBtmTop = "0px";
+            var newImgTopTop = "0px";
+    //        if(tpen.screen.liveTool === "controls"){ //the width is different for this one
+    //
+    //        }
+            if(tpen.screen.liveTool === 'parsing'){ //apply to all split tools?
+                console.log("Tool active, resize, parsing.");
+                var ratio = tpen.screen.originalCanvasWidth / tpen.screen.originalCanvasHeight;
+                var newCanvasWidth = tpen.screen.originalCanvasWidth * .57;
+                //Can I use tpen.screen.originalCanvasWidth?
+                var newCanvasHeight = 1 / ratio * newCanvasWidth;
+                var PAGEHEIGHT = Page.height();
+                if (newCanvasHeight > PAGEHEIGHT){
+                    newCanvasHeight = PAGEHEIGHT;
+                    newCanvasWidth = 1/ratio*newCanvasHeight;
+                }
+                var splitWidth = Page.width() - ($("#transcriptionTemplate").width()+35) + "px";
+                $(".split img").css("max-width", splitWidth);
+                $(".split:visible").css("width", splitWidth);
+                $("#transcriptionCanvas").css("height", newCanvasHeight + "px");
+                newImgTopTop = tpen.screen.imgTopPositionRatio * newCanvasHeight;
+                $("#imgTop .lineColIndicatorArea").css("top", newImgTopTop + "px");
+                $("#imgTop .lineColIndicatorArea").css("height", newCanvasHeight + "px");
+                $("#imgTop img").css({
+                    'height': newCanvasHeight + "px",
+                    'top': "0px"
+                });
+                $("#imgTop").css("height", newCanvasHeight + "px");
+                $("#imgTop").css("width", newCanvasWidth + "px");
+
+            }
+            else if(tpen.screen.liveTool !== "" && tpen.screen.liveTool!=="none"){
+                console.log("Tool active, resize found, not parsing.");
+                var ratio = tpen.screen.originalCanvasWidth / tpen.screen.originalCanvasHeight;
+                var newCanvasWidth = Page.width() * .55;
+                var splitWidth = window.innerWidth - (newCanvasWidth + 35) + "px";
+                if(tpen.screen.liveTool === "controls"){
+                    newCanvasWidth = Page.width()-200;
+                    splitWidth = 200;
+                }
+                //Can I use tpen.screen.originalCanvasWidth?
+                var newCanvasHeight = 1 / ratio * newCanvasWidth;
+//                var PAGEHEIGHT = Page.height();
+//                if (newCanvasHeight > PAGEHEIGHT){
+//                    newCanvasHeight = PAGEHEIGHT;
+//                    newCanvasWidth = ratio*newCanvasHeight;
+//                }
+                console.log("W, h, sw "+newCanvasWidth, newCanvasHeight, splitWidth);
+                $(".split img").css("max-width", splitWidth);
+                $(".split:visible").css("width", splitWidth);
+                $("#transcriptionTemplate").css("width", newCanvasWidth + "px");
+                $("#transcriptionCanvas").css("width", newCanvasWidth + "px");
+                $("#transcriptionCanvas").css("height", newCanvasHeight + "px");
+                newImgTopTop = tpen.screen.imgTopPositionRatio * newCanvasHeight;
+                $("#imgTop img").css("top", newImgTopTop + "px");
+                $("#imgTop .lineColIndicatorArea").css("top", newImgTopTop + "px");
+                $("#imgBottom img").css("top", newImgBtmTop + "px");
+                $("#imgBottom .lineColIndicatorArea").css("top", newImgBtmTop + "px");
+                $(".lineColIndicatorArea").css("height",newCanvasHeight+"px");
+//                if(tpen.screen.liveTool === "parsing"){
+//                    $("#imgTop img").css({
+//                    'height': height + "px"
+//        //                'width': $("#imgTop img").width()
+//                    });
+//                    $("#imgTop").css({
+//                        'height': $("#imgTop img").height(),
+//                        'width': tpen.screen.imgTopSizeRatio * $("#imgTop img").height() + "px"
+//                    });
+//                }
+            }
+            else{
+                var newHeight = $("#imgTop img").height();
+                newImgBtmTop = tpen.screen.imgBottomPositionRatio * newHeight;
+                newImgTopTop = tpen.screen.imgTopPositionRatio * newHeight;
+                $("#imgBottom img").css("top", newImgBtmTop + "px");
+                $("#imgBottom .lineColIndicatorArea").css("top", newImgBtmTop + "px");
+                $("#imgTop img").css("top", newImgTopTop + "px");
+                $("#imgTop .lineColIndicatorArea").css("top", newImgTopTop + "px");
+                $("#transcriptionCanvas").css("height",newHeight+"px");
+                $(".lineColIndicatorArea").css("height",newHeight+"px");
+            }
+            $.each($(".lineColOnLine"),function(){
+                $(this).css("line-height", $(this).height()+"px");
+            });
+            tpen.screen.textSize();
+        };
+    }
+
+    /*
+     * I believe index.jsp makes a href='javascript:createProject(msID);' call through the links for Start Transcribing.
+     * This is the javascript fuction that it tries to call, with the redirect to handle success and an alert for failure.
+     * */
+    function createProject(msID){
+        var url = "createProject";
+        var params = {ms:msID};
+        var projectID = 0;
+        $.post(url, params)
+        .success(function(data){
+            projectID = data;
+            window.location.href = "transcription.html?projectID="+projectID;
+        })
+        .fail(function(data){
+            alert("Could not create project");
+        });
+
+    }
 
 
 // Shim console.log to avoid blowing up browsers without it - daQuoi?
