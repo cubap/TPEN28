@@ -1,157 +1,105 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <title>T&#8209;PEN Transcription</title>
-        <link type="text/css" href="css/custom-theme/jQuery.css" rel="Stylesheet" />
-        <link type="text/css" href="css/transcribeSkin.css" rel="Stylesheet" />
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.js"></script>
-        <script type="text/javascript" src="js/transcribe.js"></script>
-        <script src="https://use.fontawesome.com/4ae676603d.js"></script>
-        <style>
-        p{
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>T&#8209;PEN Transcription</title>
+    <link type="text/css" href="css/custom-theme/jQuery.css" rel="Stylesheet" />
+    <link type="text/css" href="css/transcribeSkin.css" rel="Stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.js"></script>
+    <script type="text/javascript" src="js/transcribe.js"></script>
+    <script src="https://use.fontawesome.com/4ae676603d.js"></script>
+    <style>
+        p {
             padding: 0px 10px;
         }
-        #topTrim{
+        
+        #topTrim {
             position: relative;
             display: block;
             width: 100%;
         }
-        #topTrim span{
+        
+        #topTrim span {
             display: inline-block;
             border-right: 2px solid black;
         }
-        .magnifyHelp{
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            margin: 0 auto;
-            background-color: rgb(255,252,227);
-            padding: 0;
-            color: #666;
-            text-align: center;
-            z-index: 3;
-            display: none;
-            box-shadow: 0 0 5px rgba(0,0,0,0.34);
-            opacity: .85;
-        }
-        .magnifyHelp p {
-            white-space: nowrap;
-            margin: 0;
-            padding: .25em;
-        }
-        #zoomat {
-            box-shadow: inset -1px -1px 6px rgba(0,0,0,.34);
-            border-radius: 50%;
-            height: 2rem;
-            width: 2rem;
-            display: inline-block;
-            line-height: 2rem;
-            text-align: center;
-            font-size: small;
-            background: #e0e9ef;
-        }
-        .parsingHdr{
-            margin-left: 20px;
-        }
-
-
-
-
     </style>
-    </head>
-    <body>
-        <div class="pageTurnCover">
-            <div class="turnMsg">Please wait while we load the page...</div>
-            <div class="turnLoader"><img src="images/loading2.gif" /></div>
-        </div>
-        <div class="topTrim navigation">
-            <span class="trimSection" id="titleSection"><span id="trimTitle"></span>
-            </span>
-            <span class="trimSection">
+</head>
+
+<body>
+    <div class="pageTurnCover">
+        <div class="turnMsg">Please wait while we load the page...</div>
+        <div class="turnLoader"><img src="images/loading2.gif" /></div>
+    </div>
+    <div class="topTrim navigation">
+        <span class="trimSection" id="titleSection"><span id="trimTitle"></span>
+        </span>
+        <span class="trimSection">
                 <span id="trimPage"></span>
-                <!-- DO NOT add class exitPage.  It will try to fire the bulk update, which is not needed and will break the interface. -->
-                <a class="" id="prevCanvas" onclick="previousFolio();" title="Previous Page">
-                    <i class="fa fa-caret-left fa-2x"></i>
-                </a>
-                <select id="pageJump">
+        <!-- DO NOT add class exitPage.  It will try to fire the bulk update, which is not needed and will break the interface. -->
+        <a class="" id="prevCanvas" onclick="previousFolio();" title="Previous Page">
+            <i class="fa fa-caret-left fa-2x"></i>
+        </a>
+        <select id="pageJump">
                     <option id="activePage" folioNum="0">Jump to Page</option>
                 </select>
-                <!-- DO NOT add class exitPage.  It will try to fire the bulk update, which is not needed and will break the interface. -->
-                <a class="" id="nextCanvas" title="Next Page" onclick="nextFolio();">
-                    <i class="fa fa-caret-right fa-2x"></i>
-                </a>
-            </span>
-            <span class="trimSection" id="currentUser">
+        <!-- DO NOT add class exitPage.  It will try to fire the bulk update, which is not needed and will break the interface. -->
+        <a class="" id="nextCanvas" title="Next Page" onclick="nextFolio();">
+            <i class="fa fa-caret-right fa-2x"></i>
+        </a>
+        </span>
+        <span class="trimSection" id="currentUser">
                 <i class="fa fa-user"></i>
-                <span id="trimCurrentUser"></span></span>
-            <div style="position:absolute;right:0;top:0;z-index: 1;">
-                <span class="trimSection">
-                    <a id="homeBtn" class="exitPage wBtn ui-state-default ui-button" title="T-PEN Home" href="index.jsp"><span class="fa fa-home"></span></a>
-                    <a id="projectsBtn" class="exitPage wBtn ui-state-default ui-button" title="My Projects" href="project.jsp"><span class="fa fa-book"></span></a>
-                </span>
-                <span class="trimSection" id="contactSection">
-                    <a id="helpContact" href="admin.jsp#aboutTab" target="_blank" class="wBtn ui-state-default ui-button"><span class="fa fa-comment"></span></a>
-                </span>
-                <span class="trimSection">
-                    <a id="helpMe" title="Open Help <F1>" class="ui-state-default ui-button"><i class="fa fa-question" aria-hidden="true"></i></a>
-                </span>
-                <span class="trimSection" id="classicSection">
-                    <a id="classicSwitch" title="Switch back to the old interface" onclick="switchToClassicTranscription();" class="ui-state-default ui-button exitPage"><img src="images/classictpen.svg" alt="classic TPEN" aria-hidden="true" height="18" style="top: .3em;position: relative;"></a>
-                </span>
-            </div>
-        </div>
+                <span id="trimCurrentUser"></span>RERUM test</span>
+    </div>
 
-        <div class="instructions">
-            <!-- TODO: Arc we logged in to see this? -->
-            <p>
-                The area below accepts a local project ID number, a project or IIIF manifest url, or a valid T&#8209;PEN or IIIF manifest JSON object as valid input.
-            </p>
-            <p>
-                Once you have decided what to put into the area, click 'Load Transcription' to have the input created into the transcription interface.
-            </p>
-        </div>
+    <div class="instructions">
+        <!-- TODO: Are we logged in to see this? -->
+        <p>
+            The area below accepts a local project ID number, a project or IIIF manifest url, or a valid T&#8209;PEN or IIIF manifest
+            JSON object as valid input.
+        </p>
+        <p>
+            Once you have decided what to put into the area, click 'Load Transcription' to have the input created into the transcription
+            interface.
+        </p>
+    </div>
 
-        <div id="setTranscriptionObjectArea">
-            <textarea id="transcriptionText" placeholder="Transcribe this line"></textarea>
-        </div>
+    <div id="setTranscriptionObjectArea">
+        <textarea id="transcriptionText" placeholder="Transcribe this line"></textarea>
+    </div>
 
-        <button id="loadBtn" class="hideme" onclick="loadTranscription();"> Load Transcription </button>
-        <div id="transTemplateLoading">
-            <p>
-                <i class="fa fa-info-circle"></i>
-                <span id="tip">
+    <button id="loadBtn" class="hideme" onclick="loadTranscription();"> Load Transcription </button>
+    <div id="transTemplateLoading">
+        <p>
+            <i class="fa fa-info-circle"></i>
+            <span id="tip">
                     <kbd>CTRL</kbd>+<kbd>SHIFT</kbd>
                     Use Peek-Zoom to get a closer look at the line you are on.
                 </span>
-            </p>
-            <p class="turnMsg">Please wait while we load the transcription interface.</p>
-            <div class="turnLoader transLoader"><img src="images/loading2.gif" /></div>
-        </div>
-        <div class="centerInterface">
+        </p>
+        <p class="turnMsg">Please wait while we load the transcription interface.</p>
+        <div class="turnLoader transLoader"><img src="images/loading2.gif" /></div>
+    </div>
+    <div class="centerInterface">
         <div id="transcriptionTemplate">
-            <div class="magnifyHelp">
-                <p>Return to Transcribing: <kbd>ESC</kbd> or double-click</p>
-                <p>
-                    <span id="zoomat"></span>
-                    Zoom in: <kbd>+</kbd> Zoom out: <kbd>-</kbd> </p>
-            </div>
-            <div id="templateResizeBar"></div>
             <div id="parsingCover"></div>
             <div id="transcriptionCanvas">
                 <div id="noLineWarning">
                     <div id="noLineConfirmation">This canvas has no lines. You must be a leader for this project to create lines.
-                    <span style="color: red;" onclick="$('#noLineWarning').hide()">dismiss this message</span>.</div>
+                        <span style="color: red;" onclick="$('#noLineWarning').hide()">dismiss this message</span>.</div>
                 </div>
                 <div id="imgTop">
-                  <img class="transcriptionImage"/>
-                  <div class="lineColIndicatorArea">
-                  </div>
+                    <img class="transcriptionImage" />
+                    <div class="lineColIndicatorArea">
+                    </div>
                 </div>
                 <div id="transWorkspace">
-                    <div title="Slide Workspace" class="workspaceHandle slideHandleLeft"><i class="fa fa-bars"></i><i class="fa fa-arrows-v"></i></div><div title="Slide Workspace" class="workspaceHandle slideHandleRight"><i class="fa fa-arrows-v"></i><i class="fa fa-bars"></i></div>
+                    <div title="Slide Workspace" class="workspaceHandle slideHandleLeft"><i class="fa fa-bars"></i><i class="fa fa-arrows-v"></i></div>
+                    <div title="Slide Workspace" class="workspaceHandle slideHandleRight"><i class="fa fa-arrows-v"></i><i class="fa fa-bars"></i></div>
                     <div class="flex-container flex-stretch">
                         <div class="flex-bookend">
                         </div>
@@ -201,57 +149,6 @@
                             </button>
                         </div>
                     </div>
-                    <div class="flex-container flex-stretch buttons">
-                        <select id="splitScreenTools" class="let">
-                            <option selected>Splitscreen Tools</option>
-                        </select>
-                        <button id="canvasControls" title="Page Tools">
-                            Page Tools
-                            <i class="fa fa-file-image-o"></i>
-                        </button>
-<!--                        <button style="display:inline-block;" id="ltrSwitch" title="Change Interface">
-                            LTR
-                            <i class="fa fa-beer"></i>
-                        </button>
-                        <button style="display:inline-block;" id="rtlSwitch" title="Change Interface">
-                            RTL
-                            <i class="fa fa-file-image-o"></i>
-                        </button>-->
-                        <button id="magnify1" class="magnifyBtn let" magnifyImg="trans" title="Inspect Transcription Image" >
-                            Inspect
-                            <i class="fa fa-search-plus"></i>
-                        </button> <!--Page event on the listener for this class in js.-->
-                        <button id="toggleChars" title="Move Transcription Image" onclick="toggleSpecialChars(event);">
-                            Characters
-                            <i class="fa fa-keyboard-o"></i>
-                        </button>
-                        <button id="toggleXML" class="let" title="Move Transcription Image" onclick="toggleXMLTags(event);">
-                            XML Tags
-                            <i class="fa fa-code"></i>
-                        </button>
-                    </div>
-                    <div class="flex-container flex-stretch" style="flex-wrap: wrap; justify-content: space-around;">
-                        <div id="specialCharsFloat" class="flex-container special-charactered">
-                            <!--                        <div class="closeBtn" onclick="$('#toggleChars').click();">
-                                                        <i class="fa fa-close"></i>
-                                                    </div>-->
-                            <div id="charactersPopin" class="specialCharacters"  title="Special Characters" >
-                            </div>
-                            <a title="Edit Special Characters" class="lookLikeButtons editButtons exitPage" href="buttons.jsp">
-                                Edit <i class="fa fa-edit"></i>
-                            </a>
-                        </div>
-                        <div id="xmlTagFloat" class="flex-container xml-tagged">
-                        <!--                        <div class="closeBtn" onclick="$('#toggleXML').click();">
-                                                    <i class="fa fa-close"></i>
-                                                </div>-->
-                            <div id="xmlTagPopin" class="xmlTags" title="Custom XML Tags">
-                            </div>
-                            <a title="Edit XML Tags" class="lookLikeButtons editButtons exitPage" href="buttons.jsp">
-                                Edit <i class="fa fa-edit"></i>
-                            </a>
-                        </div>
-                    </div>
                 </div>
                 <div id="imgBottom">
                     <img class="transcriptionImage" />
@@ -259,1982 +156,223 @@
                 </div><br>
             </div>
         </div>
-            <!-- scrollHelpTo() is not written.  Help.revealHelp() has been rewritten to work with splitPage() -->
-        <div id="helpSplit" class="split">
-            <div class="fullScreenTrans"><i class="fa fa-share fa-flip-vertical"></i></div>
-            <div id="helpHeaders">
-                <a href='#helpGlossary'> glossary </a>
-                <a href='#helpShortcuts'> shortcuts </a>
-                <a href='#helpTools'> tools </a>
-                <a href='#helpNavigation'> navigation </a>
-            </div>
-            <div id="helpContainer">
-                <div id="helpGlossary" class="helpSection">
+    </div>
 
-                <p>Commonly used terms in this application</p>
-                <dl>
-                    <dt>Page</dt>
-                    <dd>A single image and supporting interface. Some source images may contain partial or multiple folios.</dd>
-
-                    <dt>Project</dt>
-                    <dd>Collection of images designated for a specific group of users. Defaults to all images within a selected manuscript, but may be altered.</dd>
-
-                    <dt>Manuscript</dt>
-                    <dd>Collection of images on a repository. Often, but not necessarily exemplary of the artifact document.</dd>
-
-                    <dt>Group</dt>
-                    <dd>Collection of users associated with a single project. Group membership is controlled by a Group Leader.</dd>
-
-                    <dt>User</dt>
-                    <dd>Entity intended to represent the human connected to a T‑PEN account.
-                        Users login with the e-mail address associated with the T‑PEN account and are displayed to others by a first initial and last name.
-
-                    <dt>Transcription</dt>
-                    <dd>Usually referring to the textual data associated with an image region. Transcription metadata include specific location,
-                        date of creation, and associated image data.</dd>
-
-                    <dt>Transcription Area</dt>
-                    <dd>Refers to the white textarea region where the user enters transcription text.</dd>
-
-                    <dt>Parsing/Column Editing</dt>
-                    <dd>Describes the automatic or manual process of logically splitting a page into rectangular regions to
-                        designate individual lines for transcribing. Changes to parsing are saved in the history of a transcription.</dd>
-
-                    <dt>History</dt>
-                    <dd>Previous versions of transcriptions. Changes made to textual and parsing data are recorded.</dd>
-
-                    <dt>Special Characters</dt>
-                    <dd>Custom-coded buttons that automatically enter a unicode character
-                        (typically one not included on the user's keyboard) into the transcription area.
-
-                    <dt>Buttons</dt>
-                    <dd>Typically refers to XML Tag objects customized on the Button Management page.
-                        May also refer to Special Character objects in the same location.
-                        "Buttons" may also used in the generic sense to refer to a graphically distinct, clickable region which invokes an expected action.
-                    </dd>
-                    </dl>
-            </div>
-            <div id="helpShortcuts" class="helpSection">
-
-                <p>Support for most browsers includes the following simple shortcuts:</p>
-                <dl>
-
-                        <dt>Insert the corresponding special character at the cursor location.</dt>
-                        <dd><kbd>CTRL</kbd>+<kbd>1-9</kbd></dd>
-
-                    <dt>Jump to the first line of the current page.</dt>
-                    <dd><kbd>CTRL</kbd>+<kbd>HOME</kbd></dd>
-
-                    <dt>Move forward through lines of transcription.</dt>
-                    <dd><kbd>TAB</kbd></dd>
-                    <dd><kbd>ALT</kbd>+<kbd>&dArr;</kbd></dd>
-
-                    <dt>Move backward through lines of transcription.</dt>
-                    <dd><kbd>SHIFT</kbd>+<kbd>TAB</kbd></dd>
-                    <dd><kbd>ALT</kbd>+<kbd>&uArr;</kbd></dd>
-
-                    <dt>Top of Page</dt>
-                    <dd><kbd>CTRL</kbd>+<kbd>HOME</kbd></dd>
-                    <dd>Quickly jump to the first line of the current page.</dd>
-
-                    <dt>Close any open tool & return to fullscreen transcription.</dt>
-                    <dd><kbd>ESC</kbd></dd>
-
-                    <dt>Peek-Zoom</dt>
-                    <dd><kbd>ALT</kbd>+<kbd>CTRL</kbd></dd>
-                    <dd>Hold both to use the peek-zoom, which scales the bounded area to fill the screen.</dd>
-
-                    <dt>While Inspecting</dt>
-                    <dd>+ or -</dd>
-                    <dd>Each keystroke will adjust the magnification of the tool by .4x to fine tune the image result.</dd>
-
-                    <dt>Help</dt>
-                    <dd><kbd>F1</kbd></dd>
-
-                    <dt>Browser Fullscreen</dt>
-                    <dd><kbd>F11</kbd></dd>
-                    <dd>Toggle fullscreen, eliminating browser and desktop toolbars.</dd>
-                </dl>
-            </div>
-            <div id="helpTools" class="helpSection">
-                <div class="helpSubsection">custom characters and XML tags</div>
-
-                <dl>
-                    <dt>Custom Character Entry </dt>
-                    <dd>To use Custom Characters
-                        <ol>
-                            <li>Expand the Characters tray <button type="button" onclick="Help.lightUp('#toggleChars')" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button></li>
-                            <li>Click on the desired character to insert it on the text field.</li>
-                        </ol>
-                    </dd>
-
-                    <dt>Edit the Custom Characters </dt>
-                    <dd>Click the Edit button on the expanded Custom Characters drawer <button type="button" onclick="Help.lightUp('.editButtons')" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button> </dd>
-
-                    <dt>XML Tag Entry </dt>
-                    <dd>XML tags can always be hand-encoded by the user as they transcribe but XML Tags can be set up for ease of insertion. </dd>
-
-                    <dt>To use XML Tags </dt>
-
-                    <dd>Expand the XML Tag drawer <button type="button" onclick="Help.lightUp('#toggleXML')" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button> </dd>
-                    <dd>Highlight the text and click the desired XML tag button in the XML Tag tray to wrap the tag around the selection.</dd>
-                    <dd>Insert as you type by clicking the XML tag button, adding the opening tag at the cursor
-                        and put a closing tag <span class="tags ui-corner-all right ui-state-error no-point">reminder</span>
-                        in the bottom right of the transcription text entry box.
-                    </dd>
-                    <dd>
-                        To close the tag, place the cursor at the desired end point and click the reminder. Use the "x" to dismiss unwanted reminders.
-                    </dd>
-                </dl>
-
-                <div class="helpSubsection">viewing options <button type="button" onclick="Help.lightUp('.buttons')" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button></div>
-
-                <dl>
-                    <dt>View the page image </dt>
-                    <dd>To hide the work space to see the image hold <kbd>ALT</kbd>+<kbd>CTRL</kbd>.
-                        While viewing, you can drag the image around with your mouse.
-                        Release the keys to restore the screen. </dd>
-                    <dt>Inspect</dt>
-                    <dd>To view parts of the image under magnification click the Inspect button. <button type="button" onclick="Help.lightUp('#magnify1')" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button>
-                        Once in the inspect view you can use <kbd>+</kbd> and <kbd>-</kbd> to change the magnification.
-                        Press <kbd>ESC</kbd> to return to the transcription view.</dd>
-                    <dt>Peek-Zoom</dt>
-                    <dd>To quickly fill the screen with the line being transcribed hold <kbd>CTRL</kbd>+<kbd>SHIFT</kbd>.
-                        This will enlarge the line being transcribed to fill the viewing window above the tool bar.
-                        Release the keys to restore the screen. </dd>
-                </dl>
-
-                <div class="helpSubsection"> split screen tools </div>
-
-                <dl>
-                    <dt>Import Text </dt>
-                    <dd>Upload a file for manual or automatic linebreaking. </dd>
-
-                    <dt>Line History </dt>
-                    <dd>Lists the previous saved versions of the line boundaries and transcription text.
-                        Mouseover the history entries to reveal options to revert to a previous version.
-                    </dd>
-
-                    <dt>Preview Transcription </dt>
-                    <dd>Reveal the transcription text on the previous, current, and following pages.
-                        Edit text in the transcription workspace or within the tool. </dd>
-
-                    <dt>Compare Pages </dt>
-                    <dd>View other pages from this project. Use the inspection tool to take a closer look. </dd>
-
-                    <dt>Capelli Abbreviations </dt>
-                    <dd>A. Capelli's <cite>Lexicon Abbreviaturarum</cite> for Latin and Italian abbreviations. </dd>
-                </dl>
-
-                <div class="helpSubsection">page tools <button type="button" onclick="Help.lightUp('#canvasControls')" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button> </div>
-                <dl>
-                    <dt>Image Controls </dt>
-                    <dd>These tools are designed to allow the user to manipulate the image to facilitate legibility.
-                        All these adjustments are superficial and will not persist.</dd>
-
-                    <dt>Grayscale </dt>
-                    <dd>Presents the image as a grayscale image </dd>
-
-                    <dt>Invert </dt>
-                    <dd>Presents the image with its color inverted. </dd>
-
-                    <dt>Brightness </dt>
-                    <dd>A slider tool to raise and lower the brightness of the image.
-                        <small>Note: not supported by Safari.</small> </dd>
-
-                    <dt>Contrast </dt>
-                    <dd>A slider tool to raise and lower the contrast of the image.
-                        <small>Note: not supported by Safari.</small> </dd>
-                </dl>
-
-
-                <div class="helpSubsection">column controls</div>
-                <dl>
-                    <dt>Show Lines </dt>
-                    <dd>Toggle the text column lines on and off. </dd>
-
-                    <dt>Show Labels </dt>
-                    <dd>Toggle the text letter/number labels next to each line on and off. </dd>
-
-                    <dt>Change Line Color </dt>
-                    <dd>Click to change the color of the lines and labels to improve visibility. </dd>
-
-                    <dt>Edit Columns </dt>
-                    <dd>Open the column editing/parsing interface to adjust and edit the columns and lines. </dd>
-                    </dl>
-
-            </div>
-            <div id="helpNavigation" class="helpSection">
-                <dl>
-                    <dt>Location Flag <button type="button" onclick="Help.lightUp('#trimPage')" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button></dt>
-                    <dd>Shows the label for the current page.</dd>
-                    <dt>Jump to page <button type="button" onclick="Help.lightUp('#pageJump')" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button></dt>
-                    <dd>Select any page in the current project.</dd>
-                    <dt>Previous Page <button type="button" onclick="Help.lightUp('#prevPage'); Help.lightUp('#prevCanvas');" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button></dt>
-                    <dt>Next Page <button type="button" onclick="Help.lightUp('#nextPage'); Help.lighUp('#nextCanvas');" class="reveal">Reveal on Screen <i class="fa fa-location-arrow"></i></button></dt>
-                    <dd>Step through the project one page at a time.</dd>
-                </dl>
-            </div>
-            </div>
+    <div id="genericIssue" class="ui-widget ui-corner-all ui-widget-content">
+        <h2 class="ui-widget-header ui-corner-all">Data Error</h2>
+        <p>
+            There was an issue saving some of your data. Please refresh the page to resume your activity. If you continue to see this
+            error please contact the T&#8209;PEN Admin.
+        </p>
+        <div class="clear right buttons">
+            <button class="ui-button tpenButton" onclick="document.location.reload();">OK</button>
         </div>
-        <div id="parsingSplit" class="split" >
-             <div class="fullScreenTrans">
-                     <i class="fa fa-reply fa-flip-vertical"></i>
-             </div>
-             <div class="toolLinks icon-panel">
-                 <div class="icon-panel">
-                    <button onclick='$("#createColumn").click(); toggleSelected($(this).children("img"), true);'>
-                        <img src="css/custom-theme/images/create_column_md.png" alt="reparse" height="30px" from="createColumn" />
-                    </button>
-                     <button onclick='$("#adjustColumn").click(); toggleSelected($(this).children("img"), true);'>
-                         <img src="css/custom-theme/images/adjust_column_md.png" alt="reparse" from="adjustColumn" />
-                    </button>
-                    <button onclick='$("#destroyColumn").click(); toggleSelected($(this).children("img"), true);'>
-                        <img src="css/custom-theme/images/destroy_column_md.png" alt="reparse" height="30px" from="destroyColumn" />
-                    </button>
-                    <button onclick='$("#clearColumns").click(); toggleSelected($(this).children("img"), true);'>
-                        <img src="css/custom-theme/images/reparse_md.png" alt="reparse" from="clearColumns" />
-                    </button>
-                 </div>
-                 <div class="icon-panel">
-                     <button onclick='$("#addLines").click(); toggleSelected($(this).children("img"), true);'>
-                         <img src="css/custom-theme/images/add_line_md.png" alt="reparse" height="30px" from="addLines"/>
-                     </button>
-                     <button onclick='$("#mergeLines").click(); toggleSelected($(this).children("img"), true);'>
-                         <img src="css/custom-theme/images/merge_lines_md.png" alt="reparse" from="mergeLines"/>
-                     </button>
-                     <button onclick='$("#adjustLines").click(); toggleSelected($(this).children("img"), true);'>
-                        <img src="css/custom-theme/images/adjust_lines_md.png" alt="reparse" from="adjustLines"/>
-                    </button>
-                     <button onclick='$("#removeLine").click(); toggleSelected($(this).children("img"), true);'>
-                         <img src="css/custom-theme/images/delete_line_md.png" alt="reparse" from="removeLine"/>
-                     </button>
-                 </div>
-             </div>
+    </div>
 
-                <div id="parsingDiv" class="">
-                    <div id="parseOptions">
-                        <header id="ctrlColumns" title="Make adjustments at the column level">Edit Columns</header>
-                        <div class="splitBlock">
-                            <button id="createColumn" class="tpenButton" title="Create new columns by clicking and dragging">
-                                Create Column
-                                <!--<i class="fa fa-reparse"></i>-->
-                                <img src="css/custom-theme/images/create_column_sm.png" alt="reparse" />
-                            </button>
-                            <small>Click and drag to place</small>
-                        </div>
-                        <div class="splitBlock">
-                            <button id="adjustColumn" class="tpenButton" title="Adjust the size of the columns by dragging the sides or edges.">
-                                Adjust Columns
-                                <img src="css/custom-theme/images/adjust_column_sm.png" alt="reparse" />
-                                <!--<i class="fa fa-reparse"></i>-->
-                            </button>
-                            <small>Drag the edges of an existing column.</small>
-                            <!--<small><i class="fa fa-info-circle"></i> This method does not remove any <acronym title="text, markup, and notes">transcription information</acronym>.</small>-->
-                        </div>
-                        <div class="splitBlock danger">
-                            <button id="destroyColumn" class="tpenButton" title="Remove an entire column and its data with a click">
-                                Destroy Column
-                                <img src="css/custom-theme/images/destroy_column_sm.png" alt="reparse" />
-<!--                                <i class="fa fa-reparse"></i>-->
-                            </button>
-                            <small>Click a column to remove all its lines and transcription data.</small>
-                            <small class="danger"><i class="fa fa-warning"></i> This is a destructive process and cannot be undone.</small>
-                            <!-- Reparsing is not enabled yet <button>-->
-                        </div>
-                        <div class="splitBlock danger">
-                            <button id="clearColumns" class="tpenButton" title="Remove all columns and let the autoparser reparse the page">
-                                Re-parse Page
-                                <img src="css/custom-theme/images/reparse_sm.png" alt="reparse" />
-                                <!--<i class="fa fa-reparse"></i>-->
-                                <!--<i class="fa fa-reparse"></i>-->
-                            </button>
-                            <small class="danger">
-                                <i class="fa fa-warning"></i>
-                                Click to remove all transcription data and lines from this page.
-                                The page will then be automatically re-parsed, which will create new columns.
-                            </small>
-                            <!-- Reparsing is not enabled yet <button>-->
-                        </div>
-                        <header id="ctrlLines" title="Make adjustments at the line level">Edit Lines</header>
-                        <div class="splitBlock">
-                            <button id="addLines" class="tpenButton" title="Split lines to create new ones in a column">
-                                Add Line
-                                <img src="css/custom-theme/images/add_line_sm.png" alt="reparse" />
-                                <!--<i class="fa fa-reparse"></i>-->
-                            </button>
-                                <small>Click within the shaded area to define the bottom of the new line.</small>
-                                <!--<small><i class="fa fa-info-circle"></i> Any <acronym title="text, markup, and notes">transcription information</acronym> will remain with the line above where you click.</small>-->
-                                <br>
-                                <small class="customRulerArea">
-                                    Trouble seeing the ruler? Change the color below.
-                                    <br>
-                                    <span id="sampleRuler"></span>
-                                    <label for="black"><input onclick="rulerColor('black');" CHECKED type="radio" value="black" name="rulerColor"/>Black</label>
-                                    <label for="white"><input onclick='rulerColor("white");' id="white" type="radio" value="white" name="rulerColor"/>White</label>
-
-                                    <label style="margin-left: 10px; margin-right: 3px;" for="customRuler">
-                                        Custom
-                                        <input style="width:80px;" title="Type the name of any valid HTML color or code. If the code is invalid, a default color will be shown."
-                                            type="text" id="customRuler" onfocus="$('input[name=\'rulerColor\']').removeAttr('checked');" onkeyup="rulerColor('custom');" placeholder="transparent" value="transparent"/>
-                                    </label>
-                                </small>
-
-                            </div>
-                            <div class="splitBlock">
-                                <button id="adjustLines" class="tpenButton" title="Simple adjustments to individual lines">
-                                    Adjust Lines
-                                    <img src="css/custom-theme/images/adjust_lines_sm.png" alt="reparse" />
-                                    <!--<i class="fa fa-reparse"></i>-->
-                                </button>
-                                <small>Click and drag the right side of the line to contain the line accurately.</small>
-                                <!--<small><i class="fa fa-info-circle"></i> Only the right boundary can be moved in this tool.</small>-->
-                            </div>
-                            <div class="splitBlock">
-<!--                                <button id="removeLines" class="tpenButton" title="Merge two lines in a column">-->
-                                <button id="mergeLines" class="tpenButton" title="Merge two lines in a column">
-                                    Merge Lines
-                                    <img src="css/custom-theme/images/merge_lines_sm.png" alt="reparse" />
-                                    <!--<i class="fa fa-reparse"></i>-->
-                                </button>
-                                <small>Click within the shaded area to merge the highlighted lines.</small>
-                                <!--<small><i class="fa fa-info-circle"></i> This method combines your transcription information into the new line.</small>-->
-                            </div>
-                             <div class="splitBlock danger">
-                                <!--<button id="removeLines" class="tpenButton" title="Delete the last line of a column.">-->
-                                <button id="removeLine" class="tpenButton" title="Delete the last line of a column.">
-                                    Delete Line
-                                    <img src="css/custom-theme/images/delete_line_sm.png" alt="reparse" />
-                                    <!--<i class="fa fa-reparse"></i>-->
-                                </button>
-                                <small>Click within the shaded area to delete the last line of a column.</small>
-                                <small><i class="fa fa-info-circle"></i> Deleting a line also removes its associated transcription information..</small>
-                            </div>
-                    </div>
-                </div>
-            </div>
-            <div id="linebreakSplit" class="split">
-                <div class="fullScreenTrans"><i class="fa fa-share fa-flip-vertical"></i></div>
-            <h3>Linebreak Existing Transcription</h3>
-                <div id="linebreakTextContainer">
-                    <!-- visible if text is saved -->
-                    <div>
-                        This project has text stored for linebreaking:
-                        <div id="linebreakText">
-                            <span id="lbText"> no text stored </span>
-                            <!--                   <div id='charLimit' class='ui-corner-all ui-state-error-text small clear'>More characters stored than shown here
-                                                 If thisProject.getLinebreakCharacterLimit() is available in the project object, this can be more specific
-                                               </div>-->
-                        </div>
-                        <div id="linebreakOptions">
-                            <div id="useText" onclick="Linebreak.useText()" class="tpenButton block" title="Insert this text at the current line">Insert Text Here</div>
-                            <a id="newText" class="tpenButton block" title="Upload a new file to linebreak">Upload New File</a>
-                            <div id="linebreakStringBtn" class="tpenButton block" title="Attempt linebreaking using this string">Preview Automatic Linebreaks
-                                <!--                   TODO replace value with stored value once it is stored-->
-                                <input name="linebreakString" id="linebreakString" type="text" placeholder="<lb />" value="" />
-                            </div>
-                            <div id="useLinebreakText" onclick="Linebreak.useLinebreakText()" class="tpenButton block" style="display:none;" title="Automatically linebreak this page">Use Automatic Linebreaking
-                                <span id="linesDetected"></span>
-                            </div>
-                        </div>
-                            <ol class="pull-left">
-                                <li>Navigate to a line to start;</li>
-                                <li><span class="loud">Insert Text</span> as a block; or</li>
-                                <li>Enter a linebreak string to attempt automatic linebreaking; and</li>
-                                <li>Press Enter to move all text following the cursor down to the next line.</li>
-                            </ol>
-                            <span class="small">*At the end of the page, the remaining text will be saved for use on the next page.</span>
-                    </div>
-                </div>
-                <div id="linebreakNoTextContainer">
-                <!-- no text saved -->
-                    Begin by <a id="uploadText" class="btn btn-default">uploading some text</a> to linebreak
-                </div>
-
-            </div>
-            <div id="compareSplit" class="split">
-                <div class="fullScreenTrans"><i class="fa fa-share fa-flip-vertical"></i></div>
-                <div class="toolLinks">
-                    <select id="compareJump" class="">
-                        <option folioNum="0">Compare To</option>
-                    </select>
-                    <button class="showMe2" onclick="restoreWorkspace();">Show Workspace</button>
-                    <button class="hideMe" style="position: relative;" onclick="hideWorkspaceToSeeImage();" >Hide Workspace</button>
-                    <button class="magnifyBtn" magnifyImg="compare" >Inspect <i class="fa fa-search-plus"></i></button>
-                </div>
-
-                <img class="compareImage" folioNum="1"></img>
-            </div>
-
-            <div id='controlsSplit' class='split' style="width:200px;max-width:200px;overflow:auto;">
-                <div class="fullScreenTrans"><i class="fa fa-share fa-flip-vertical"></i></div>
-                <div style="padding:0 15px;">
-                    <button style="margin-bottom: 8px;" class="block" onclick="resetImageTools(false);" title="Reset Tools">
-                    Reset to Defaults
-                    </button>
-                    <header> Image Controls </header>
-                    <button which="grayscale" class="block" onclick="toggleFilter('grayscale');" title="Grayscale">
-                        Grayscale
-                        <i class="fa fa-picture-o" style="color: #999;background: #DDD;border-radius: 2px;"></i></button>
-                    <button which="invert" class="block" onclick="toggleFilter('invert');">
-                        Invert
-                        <i class="fa fa-picture-o" style="background: #FFF;border-radius: 2px;color: #000;"></i>
-                    </button>
-                    <div id="imageToolSliders" class="imgTool">
-                        Brightness  <i class="fa fa-sun-o"></i>
-                        <div id="brightnessSlider"></div>
-                        Contrast  <i class="fa fa-adjust"></i>
-                        <div id="contrastSlider"></div>
-                    </div>
-
-                    <header> Column Controls</header>
-                    <button id="showTheLines" role="button" class="block" onclick="toggleLineMarkers();">
-                        Lines
-                    </button>
-                    <button id="showTheLabels" role="button" class="block selected" onclick="toggleLineCol();">
-                        Labels
-                    </button>
-                    <button role="button" id="markerColors" class="block" onclick="markerColors();">Change Line Color</button>
-                    <button role="button" id="parsingBtn" title="Redraw the lines on this page" class='block'>
-                        Edit Columns
-                        <i class="fa fa-barcode fa-rotate-90"></i>
-                    </button>
-
-                    <header>
-                        Keyboard Shortcuts
-                    </header>
-                    <div>
-                        <strong>View/Move Image</strong>
-                        <kbd>CTRL</kbd>+<kbd>ALT</kbd>: hold to temporarily hide the workspace and drag around your page image
-                    </div>
-                    <div>
-                        <strong>Peek-Zoom</strong>
-                        <kbd>CTRL</kbd>+<kbd>SHIFT</kbd>: peek-zoom into the current line of transcription
-                    </div>
-                </div>
-            </div>
-
-            <div id="abbreviationSplit" class="split">
-                <div class="fullScreenTrans"><i class="fa fa-share fa-flip-vertical"></i></div>
-                <!--                        Image is loaded in Data.postLoader()-->
-                <img id="abbrevImg" alt="abbreviation page" src="//t-pen.org/images/cappelli/Scan0064.jpg" style="height: 100%; width: auto;">
-                <div id="abbreviations">
-                    <select id="abbrevGroups">
-                        <option selected="">Select One</option>
-                        <option value="0">A</option>
-                        <option value="1">B</option>
-                        <option value="2">C</option>
-                        <option value="3">9</option>
-                        <option value="4">D</option>
-                        <option value="5">E</option>
-                        <option value="6">F</option>
-                        <option value="7">G</option>
-                        <option value="8">H</option>
-                        <option value="9">I</option>
-                        <option value="10">K</option>
-                        <option value="11">L</option>
-                        <option value="12">M</option>
-                        <option value="13">N</option>
-                        <option value="14">O</option>
-                        <option value="15">P</option>
-                        <option value="16">Q</option>
-                        <option value="17">R</option>
-                        <option value="18">S</option>
-                        <option value="19">T</option>
-                        <option value="20">V</option>
-                        <option value="21">X</option>
-                        <option value="22">Y</option>
-                        <option value="23">Z</option>
-                        <option value="24">SIGNS</option>
-                        <option value="25">ROMAN NUM</option>
-                        <option value="26">ARABIC NUM</option>
-                    </select>
-                    <select disabled="" id="abbrevLabels">
-                        <option selected="">Select One</option>
-                        <option class="group-0" value="Scan0064.jpg" id="596">001 - A-A</option>
-                        <option class="group-0" value="Scan0065.jpg" id="597">002 - At-An</option>
-                        <option class="group-0" value="Scan0066.jpg" id="598">003 - Ana-AiA</option>
-                        <option class="group-0" value="Scan0067.jpg" id="599">004 - AAti-ABBTI</option>
-                        <option class="group-0" value="Scan0068.jpg" id="600">005 - ABD-ABULO</option>
-                        <option class="group-0" value="Scan0069.jpg" id="601">006 - AC-ACCIDt</option>
-                        <option class="group-0" value="Scan0070.jpg" id="602">007 - ACCIT-ACTT</option>
-                        <option class="group-0" value="Scan0071.jpg" id="603">008 - ACTU-ADHNDA</option>
-                        <option class="group-0" value="Scan0072.jpg" id="604">009 - ADHNT-ADUSITs</option>
-                        <option class="group-0" value="Scan0073.jpg" id="605">010 - ADUSO-AGem</option>
-                        <option class="group-0" value="Scan0074.jpg" id="606">011 - AGm-AH</option>
-                        <option class="group-0" value="Scan0075.jpg" id="607">012 - AGTOS-AL</option>
-                        <option class="group-0" value="Scan0076.jpg" id="608">013 - ALd-ALIT</option>
-                        <option class="group-0" value="Scan0077.jpg" id="609">014 - ALL-ALTI</option>
-                        <option class="group-0" value="Scan0078.jpg" id="610">015 - ALTaMTE-AMR</option>
-                        <option class="group-0" value="Scan0079.jpg" id="611">016 - AMT-ANLATA</option>
-                        <option class="group-0" value="Scan0080.jpg" id="612">017 - ANN-ANZ</option>
-                        <option class="group-0" value="Scan0081.jpg" id="613">018 - AOo-APLIS</option>
-                        <option class="group-0" value="Scan0082.jpg" id="614">019 - APM-APPiAT</option>
-                        <option class="group-0" value="Scan0083.jpg" id="615">020 - APPB-APTIne</option>
-                        <option class="group-0" value="Scan0084.jpg" id="616">021 - APTIS-AiQUAr</option>
-                        <option class="group-0" value="Scan0085.jpg" id="617">022 - AR-ARta</option>
-                        <option class="group-0" value="Scan0086.jpg" id="618">023 - ARto-ARGt</option>
-                        <option class="group-0" value="Scan0087.jpg" id="619">024 - ARGta-ASLF</option>
-                        <option class="group-0" value="Scan0088.jpg" id="620">025 - ASO, ASR-AT</option>
-                        <option class="group-0" value="Scan0089.jpg" id="621">026 - AT-ATTNDD</option>
-                        <option class="group-0" value="Scan0090.jpg" id="622">027 - ATTO-AUDITrIS</option>
-                        <option class="group-0" value="Scan0091.jpg" id="623">028 - AUDR-AUTHui</option>
-                        <option class="group-0" value="Scan0092.jpg" id="624">029 - AUTHAS-AZ</option>
-                        <option class="group-1" value="1.jpg" id="484">030 - B-Bn</option>
-                        <option class="group-1" value="3.jpg" id="485">031 - Bor-BAPaRI</option>
-                        <option class="group-1" value="4.jpg" id="486">032 - BAPT-BENEIJS</option>
-                        <option class="group-1" value="5.jpg" id="487">033 - BENELOS-BISlis</option>
-                        <option class="group-1" value="6.jpg" id="489">034 - BL-BNDCS</option>
-                        <option class="group-1" value="6b.jpg" id="488">035 - BNDICT-BOF</option>
-                        <option class="group-1" value="7.jpg" id="490">036 - BOI-BRIS</option>
-                        <option class="group-1" value="8.jpg" id="491">037 - BRO-BTME</option>
-                        <option class="group-1" value="9.jpg" id="492">038 - BTO-BZo</option>
-                        <option class="group-2" value="10.jpg" id="234">039 - C-C</option>
-                        <option class="group-2" value="001.jpg" id="1">040 - C-Cm</option>
-                        <option class="group-2" value="003.jpg" id="2">041 - Cmo-CAla</option>
-                        <option class="group-2" value="004.jpg" id="3">042 - CAli-CALA</option>
-                        <option class="group-2" value="005.jpg" id="4">043- CALA-CANr</option>
-                        <option class="group-2" value="006.jpg" id="5">044 - CANro-CAPte</option>
-                        <option class="group-2" value="007.jpg" id="6">045 - CAPte-CAR</option>
-                        <option class="group-2" value="008.jpg" id="7">046 - CAR-CASA</option>
-                        <option class="group-2" value="009.jpg" id="8">047 - CASAL-CAUoNNO</option>
-                        <option class="group-2" value="010.jpg" id="9">048 - CAUOE-CCHA</option>
-                        <option class="group-2" value="011.jpg" id="10">049 -CCE-CDD</option>
-                        <option class="group-2" value="012.jpg" id="11">050 - CDDI-CEL</option>
-                        <option class="group-2" value="013.jpg" id="12">051 - CELEBaNa-CHOR</option>
-                        <option class="group-2" value="014.jpg" id="13">052 - CHOR-CISTER</option>
-                        <option class="group-2" value="015.jpg" id="14">053 - CIT-CLAUo</option>
-                        <option class="group-2" value="016.jpg" id="15">054 - CLAUE-CLTU</option>
-                        <option class="group-2" value="017.jpg" id="16">055 - CLU-CrO</option>
-                        <option class="group-2" value="018.jpg" id="17">056 - COb-COGSPI</option>
-                        <option class="group-2" value="019.jpg" id="18">057 - COGaTI-COITAS</option>
-                        <option class="group-2" value="020.jpg" id="19">058 - COITER-COLOe</option>
-                        <option class="group-2" value="021.jpg" id="20">059 - COLR-CONCTIM</option>
-                        <option class="group-2" value="022.jpg" id="21">060 - CONCTOS-CONTIS</option>
-                        <option class="group-2" value="023.jpg" id="22">061 - CONTO-CORli</option>
-                        <option class="group-2" value="024.jpg" id="23">062 - CORm-CORr</option>
-                        <option class="group-2" value="025.jpg" id="24">063 - CORRCOR-COVSATOE</option>
-                        <option class="group-2" value="026.jpg" id="25">064 - CONT-CRIAL</option>
-                        <option class="group-2" value="027.jpg" id="26">065 - CRIALE-CSRC</option>
-                        <option class="group-2" value="028.jpg" id="27">066 - CSSR-CTODIE</option>
-                        <option class="group-2" value="029.jpg" id="28">067 - CTOS-CYST</option>
-                        <option class="group-3" value="030.jpg" id="29">068 - 9-9</option>
-                        <option class="group-3" value="031.jpg" id="30">069 - 9e-9s</option>
-                        <option class="group-3" value="032.jpg" id="31">070 - 9sm-9iCAo</option>
-                        <option class="group-3" value="033.jpg" id="32">071 - 9iCACO-9CrRIT</option>
-                        <option class="group-3" value="034.jpg" id="33">072 - 9CSIO-9aDNT</option>
-                        <option class="group-3" value="035.jpg" id="34">073 - 9DO-9FENS</option>
-                        <option class="group-3" value="036.jpg" id="35">074 - 9FESS-9Gre</option>
-                        <option class="group-3" value="037.jpg" id="36">075 - 9Gt-9HR</option>
-                        <option class="group-3" value="038.jpg" id="37">076 - 9aHT-9M</option>
-                        <option class="group-3" value="039.jpg" id="38">077 - 9eM-9NE</option>
-                        <option class="group-3" value="040.jpg" id="39">078 - 9NE-9Pie</option>
-                        <option class="group-3" value="041.jpg" id="40">080 - 9PLa-9PUaNDO</option>
-                        <option class="group-3" value="042.jpg" id="41">081 - 9PUaRE-9SEQR</option>
-                        <option class="group-3" value="043.jpg" id="42">082 - 9SrGIT-9STO</option>
-                        <option class="group-3" value="044.jpg" id="43">083 - 9STO-9TBUE</option>
-                        <option class="group-3" value="045.jpg" id="44">084 - 9TiCO-9TRaTA</option>
-                        <option class="group-3" value="046.jpg" id="45">085 - 9TOR-9aXt</option>
-                        <option class="group-4" value="b.jpg" id="505">086 - D-D</option>
-                        <option class="group-4" value="c1.jpg" id="506">087 - D-Dm</option>
-                        <option class="group-4" value="c.jpg" id="508">087 D-Dm [duplicate]</option>
-                        <option class="group-4" value="d.jpg" id="509">088 - Dm-DABR</option>
-                        <option class="group-4" value="e.jpg" id="510">089 - DACOI-DC</option>
-                        <option class="group-4" value="f.jpg" id="511">090 - DC-DCOM</option>
-                        <option class="group-4" value="g.jpg" id="512">091 - DCON-DDFF</option>
-                        <option class="group-4" value="h.jpg" id="513">092 - DDI-DEB</option>
-                        <option class="group-4" value="i.jpg" id="515">093 - DEBm-DEFD</option>
-                        <option class="group-4" value="j.jpg" id="516">094 - DEFQL-DENOIm</option>
-                        <option class="group-4" value="k.jpg" id="517">095 - DENT-DET</option>
-                        <option class="group-4" value="l.jpg" id="518">096 - DET-DFQ</option>
-                        <option class="group-4" value="m.jpg" id="519">097 - DG-DICITr</option>
-                        <option class="group-4" value="n.jpg" id="520">098 - DICS-DIG</option>
-                        <option class="group-4" value="o.jpg" id="521">099 - DIG-DILNS</option>
-                        <option class="group-4" value="p.jpg" id="522">100 - DILNT-DIRTI</option>
-                        <option class="group-4" value="q.jpg" id="523">101 - DIS-DISSd</option>
-                        <option class="group-4" value="r.jpg" id="524">102 - DISSA-DIVIr</option>
-                        <option class="group-4" value="s.jpg" id="625">103 - DIUr-DMRAT</option>
-                        <option class="group-4" value="t.jpg" id="626">104 - DMRO-DoNES</option>
-                        <option class="group-4" value="u.jpg" id="627">105 - DNETr-DNTES</option>
-                        <option class="group-4" value="v.jpg" id="628">106 - DNTI-DOIcu</option>
-                        <option class="group-4" value="w.jpg" id="629">107 - DOIi-DORE</option>
-                        <option class="group-4" value="x.jpg" id="630">108 - DOT-DRAR</option>
-                        <option class="group-4" value="y.jpg" id="631">109  - DRE-DSA</option>
-                        <option class="group-4" value="z.jpg" id="632">110 - DSCiPo-DTIt</option>
-                        <option class="group-4" value="aa.jpg" id="493">111 - DTIui-DUx</option>
-                        <option class="group-4" value="ab.jpg" id="494">112 - DUAt-DYOC</option>
-                        <option class="group-5" value="ac.jpg" id="495">113 - E-E</option>
-                        <option class="group-5" value="ad.jpg" id="496">114 - E9a-EBMDA</option>
-                        <option class="group-5" value="ae.jpg" id="497">115 - EBiO-ECCLIE</option>
-                        <option class="group-5" value="af.jpg" id="498">116 - ECCLIIS-EEM</option>
-                        <option class="group-5" value="ag.jpg" id="499">117 - EENa-EG</option>
-                        <option class="group-5" value="ah.jpg" id="500">118 - EG-EIGEr</option>
-                        <option class="group-5" value="ai.jpg" id="501">119 - EIEV-ELIA</option>
-                        <option class="group-5" value="aj.jpg" id="502">120 - ELIE-EMPHSIM</option>
-                        <option class="group-5" value="ak.jpg" id="503">120 - ELIE-EMPHSIM [duplicate]</option>
-                        <option class="group-5" value="al.jpg" id="504">121 - EMPiI-EPEDcl</option>
-                        <option class="group-5" value="0510042.jpg" id="66">122 - EPH-EPS</option>
-                        <option class="group-5" value="0510043.jpg" id="77">123 - EPSCO-ER</option>
-                        <option class="group-5" value="0510044.jpg" id="88">124 - ER-ETN</option>
-                        <option class="group-5" value="0510045.jpg" id="89">125 - ETNA-EUGLIA</option>
-                        <option class="group-5" value="0510046.jpg" id="90">126 - EVI-EXar</option>
-                        <option class="group-5" value="0510047.jpg" id="91">127 - EXdi-EXtis</option>
-                        <option class="group-5" value="0510048.jpg" id="92">128 - EXtis-EXaDS</option>
-                        <option class="group-5" value="0510049.jpg" id="93">129 - EXaDUCE-EXMIt</option>
-                        <option class="group-5" value="05100410.jpg" id="46">130 - EXMO-EXPIli</option>
-                        <option class="group-5" value="05100411.jpg" id="47">131 - EXPIt-EXaT</option>
-                        <option class="group-5" value="05100412.jpg" id="48">132 - EXT-EZECH</option>
-                        <option class="group-6" value="05100413.jpg" id="49">133 - F-F</option>
-                        <option class="group-6" value="05100414.jpg" id="50">134 - F9-FAGmi</option>
-                        <option class="group-6" value="05100415.jpg" id="51">135 - FAILre-FCTA</option>
-                        <option class="group-6" value="05100416.jpg" id="52">136 - FCTO-FEME</option>
-                        <option class="group-6" value="05100417.jpg" id="53">137 - FER-FIatu</option>
-                        <option class="group-6" value="05100418.jpg" id="54">138 - FIe-FIGaCOM</option>
-                        <option class="group-6" value="05100419.jpg" id="55">139 - FIGrE-FLE</option>
-                        <option class="group-6" value="05100420.jpg" id="56">140 - FLE-FLUI</option>
-                        <option class="group-6" value="05100421.jpg" id="57">141 - FLUIA-FOA</option>
-                        <option class="group-6" value="05100422.jpg" id="58">142 - FOAn-FeQCI</option>
-                        <option class="group-6" value="05100423.jpg" id="59">143 - FeQT-FRCTM</option>
-                        <option class="group-6" value="05100424.jpg" id="60">144 - FRDIC-FRMTO</option>
-                        <option class="group-6" value="05100425.jpg" id="61">145 - FRNA-FaTi</option>
-                        <option class="group-6" value="170592.jpg" id="475">145 - FRNA-FaTi [duplicate]</option>
-                        <option class="group-6" value="05100426.jpg" id="62">146 - FTm-FUNT</option>
-                        <option class="group-7" value="05100427.jpg" id="63">147 - G-G</option>
-                        <option class="group-7" value="05100428.jpg" id="64">148 - Gatir-GC</option>
-                        <option class="group-7" value="05100429.jpg" id="65">149 - GC-GENS</option>
-                        <option class="group-7" value="170593.jpg" id="476">149 - GC-GENS</option>
-                        <option class="group-7" value="05100430.jpg" id="67">150 - GEOa-GLI</option>
-                        <option class="group-7" value="05100431.jpg" id="68">151 - GLIA-GNb</option>
-                        <option class="group-7" value="170594.jpg" id="477">151 - GLIA-GNb [duplicate]</option>
-                        <option class="group-7" value="05100432.jpg" id="69">152 - GaNle-GNrO</option>
-                        <option class="group-7" value="05100433.jpg" id="70">153 - GNOE-GRASE</option>
-                        <option class="group-7" value="170595.jpg" id="478">153 - GNOE-GRASE [duplicate] </option>
-                        <option class="group-7" value="05100434.jpg" id="71">154- GRAT-GTS</option>
-                        <option class="group-7" value="05100435.jpg" id="72">155 - GTS-GZ</option>
-                        <option class="group-8" value="05100436.jpg" id="73">156 - H-H</option>
-                        <option class="group-8" value="05100437.jpg" id="74">157 - H-HACTUS</option>
-                        <option class="group-8" value="170596.jpg" id="479">157 - H-HACTUS [duplicate]</option>
-                        <option class="group-8" value="05100438.jpg" id="75">158 - HAIT-HDB</option>
-                        <option class="group-8" value="05100439.jpg" id="76">159 - HDS-HERI</option>
-                        <option class="group-8" value="170597.jpg" id="480">159 - HDS-HERI [duplicate]</option>
-                        <option class="group-8" value="05100440.jpg" id="78">160 - HERIUS-HIES</option>
-                        <option class="group-8" value="05100441.jpg" id="79">161 - HIL-HLNR</option>
-                        <option class="group-8" value="170598.jpg" id="481">161 - HIL-HLNR [duplicate]</option>
-                        <option class="group-8" value="05100442.jpg" id="80">162 - HLUD-HOa</option>
-                        <option class="group-8" value="170599.jpg" id="482">163 - HO-HOMB</option>
-                        <option class="group-8" value="05100443.jpg" id="81">163 - HO-HOMB [duplicate]</option>
-                        <option class="group-8" value="05100444.jpg" id="82">164 - HOMIJ-HRDI</option>
-                        <option class="group-8" value="05100445.jpg" id="83">165 - HRDIB-HUAte</option>
-                        <option class="group-8" value="05100446.jpg" id="84">166 - HUAIt-HUNT</option>
-                        <option class="group-8" value="05100447.jpg" id="85">167 - HUNT-HYPP</option>
-                        <option class="group-9" value="05100448.jpg" id="86">168 - I-I</option>
-                        <option class="group-9" value="05100449.jpg" id="87">169 - I-I9ti</option>
-                        <option class="group-9" value="0511042.jpg" id="114">170 Iti-IBI</option>
-                        <option class="group-9" value="0511043.jpg" id="125">171 - IBM-ICORPles</option>
-                        <option class="group-9" value="0511044.jpg" id="136">172 - ICOTIt-IDEPte</option>
-                        <option class="group-9" value="0511045.jpg" id="147">173 - IDIa-IEaLIA</option>
-                        <option class="group-9" value="0511046.jpg" id="158">174 - IEM-IFUoe</option>
-                        <option class="group-9" value="0511047.jpg" id="169">175 - IG-IHES</option>
-                        <option class="group-9" value="0511048.jpg" id="170">176 - IHET-IIM</option>
-                        <option class="group-9" value="0511049.jpg" id="171">177 - IINTRE-ILST</option>
-                        <option class="group-9" value="05110410.jpg" id="94">178 - ILLUes-IMPRE</option>
-                        <option class="group-9" value="05110411.jpg" id="95">179 - IMPaRIS-INDa</option>
-                        <option class="group-9" value="05110412.jpg" id="96">180 - INDr-INHENS</option>
-                        <option class="group-9" value="05110413.jpg" id="97">181 - INHICO-INQiSITOE</option>
-                        <option class="group-9" value="05110414.jpg" id="98">182 - INQoNU-INT</option>
-                        <option class="group-9" value="05110415.jpg" id="99">183 - INTa-INTELLR</option>
-                        <option class="group-9" value="05110416.jpg" id="100">184 - INTELLS-IO</option>
-                        <option class="group-9" value="05110417.jpg" id="101">185 - IO-IP</option>
-                        <option class="group-9" value="05110418.jpg" id="102">186 - IP-IPLITa</option>
-                        <option class="group-9" value="05110419.jpg" id="103">187 - IPLOE-IPSSIOE</option>
-                        <option class="group-9" value="05110420.jpg" id="104">188 - IPSSOM-IRREt</option>
-                        <option class="group-9" value="05110421.jpg" id="105">189 - IRRaES-ISTuti</option>
-                        <option class="group-9" value="05110422.jpg" id="106">190 - ISTA-ITd</option>
-                        <option class="group-9" value="05110423.jpg" id="107">191 - ITge-ITEo</option>
-                        <option class="group-9" value="05110424.jpg" id="108">192 - ITEr-ITEM</option>
-                        <option class="group-9" value="05110425.jpg" id="109">193 - ITM-IUB</option>
-                        <option class="group-9" value="05110426.jpg" id="110">194 - IVD-IX</option>
-                        <option class="group-10" value="05110427.jpg" id="111">195 - K-K</option>
-                        <option class="group-10" value="05110428.jpg" id="112">196 - KA-KLDAR</option>
-                        <option class="group-10" value="05110429.jpg" id="113">197 - KLN-KYRIEon</option>
-                        <option class="group-11" value="05110430.jpg" id="115">198 - L-L</option>
-                        <option class="group-11" value="05110431.jpg" id="116">199 - L-LATne</option>
-                        <option class="group-11" value="05110432.jpg" id="117">200 - LAT-LCIO</option>
-                        <option class="group-11" value="05110433.jpg" id="118">201 - LCIS-LEGMA</option>
-                        <option class="group-11" value="05110434.jpg" id="119">202 - LEGME-LIBOR</option>
-                        <option class="group-11" value="05110435.jpg" id="120">203 - LIBS-LIULIA</option>
-                        <option class="group-11" value="05110436.jpg" id="121">204 - LL-LOme</option>
-                        <option class="group-11" value="05110437.jpg" id="122">205 - LOa-LP</option>
-                        <option class="group-11" value="05110438.jpg" id="123">206 - LP-LU</option>
-                        <option class="group-11" value="05110439.jpg" id="124">207 - LUa-LUZa</option>
-                        <option class="group-12" value="05110440.jpg" id="126">208 - M-M</option>
-                        <option class="group-12" value="05110441.jpg" id="127">209 - M-Mt</option>
-                        <option class="group-12" value="05110442.jpg" id="128">210 Mi-Mx</option>
-                        <option class="group-12" value="05110443.jpg" id="129">211 - MA-MAE</option>
-                        <option class="group-12" value="1705100.jpg" id="379">211 - MA-MAE [duplicate]</option>
-                        <option class="group-12" value="05110444.jpg" id="130">212 - MAE-MAaLI</option>
-                        <option class="group-12" value="05110445.jpg" id="131">213 - MALIJ-MATEc</option>
-                        <option class="group-12" value="1705101.jpg" id="380">213 - MALIJ-MATEc [duplicate]</option>
-                        <option class="group-12" value="05110446.jpg" id="132">214 - MATHcA-MCH</option>
-                        <option class="group-12" value="05110447.jpg" id="133">215 - MCI-MEo</option>
-                        <option class="group-12" value="05110448.jpg" id="134">216 - MEoa-MEaR</option>
-                        <option class="group-12" value="05110449.jpg" id="135">217 - MEoR-MGR</option>
-                        <option class="group-12" value="05110450.jpg" id="137">218 - MGRAT-MIAS</option>
-                        <option class="group-12" value="05110451.jpg" id="138">219 - MICHIS-MISS</option>
-                        <option class="group-12" value="05110452.jpg" id="139">220 - MIST-MLM</option>
-                        <option class="group-12" value="05110453.jpg" id="140">221 - MLM-MM</option>
-                        <option class="group-12" value="05110454.jpg" id="141">222 - MM-MO</option>
-                        <option class="group-12" value="05110455.jpg" id="142">223 - MO-MOIJ</option>
-                        <option class="group-12" value="05110456.jpg" id="143">224 - MOIO-MORU</option>
-                        <option class="group-12" value="05110457.jpg" id="144">225 - MOS-MREM</option>
-                        <option class="group-12" value="05110458.jpg" id="145">226 - MRES-MS</option>
-                        <option class="group-12" value="05110459.jpg" id="146">227 - MS-MTO</option>
-                        <option class="group-12" value="1705102.jpg" id="381">227 - MS-MTO [duplicate]</option>
-                        <option class="group-12" value="05110460.jpg" id="148">228 - MaTOR-MZO</option>
-                        <option class="group-13" value="05110461.jpg" id="149">229 - N-N</option>
-                        <option class="group-13" value="05110462.jpg" id="150">230 - N-Nm</option>
-                        <option class="group-13" value="05110463.jpg" id="151">231 - Nn-NAaLE</option>
-                        <option class="group-13" value="05110464.jpg" id="152">232 - NrALE-NCo</option>
-                        <option class="group-13" value="05110465.jpg" id="153">233 - NCCm-NEar</option>
-                        <option class="group-13" value="05110466.jpg" id="154">234 - NE-NEaRi</option>
-                        <option class="group-13" value="05110467.jpg" id="155">235 - NERIA-NLLATE</option>
-                        <option class="group-13" value="05110468.jpg" id="156">236 - NLLI-NO</option>
-                        <option class="group-13" value="05110469.jpg" id="157">237 - NO-NOrius</option>
-                        <option class="group-13" value="05110470.jpg" id="159">238 - NOA-NOIAa</option>
-                        <option class="group-13" value="05110471.jpg" id="160">239 - NOIAT-NOaS</option>
-                        <option class="group-13" value="1705103.jpg" id="382">239 - NOIAT-NOaS [duplicate]</option>
-                        <option class="group-13" value="05110472.jpg" id="161">240 - NOS-NQ</option>
-                        <option class="group-13" value="05110473.jpg" id="162">241 - NQi-NSr</option>
-                        <option class="group-13" value="1705104.jpg" id="383">241 - NQl-NSr [duplicate]</option>
-                        <option class="group-13" value="05110474.jpg" id="163">242 - NaS-NUANDO</option>
-                        <option class="group-13" value="05110475.jpg" id="164">243 - NUARE-NUaTUS</option>
-                        <option class="group-13" value="1705105.jpg" id="384">243 - NUARE-NUaTUS [duplicate]</option>
-                        <option class="group-14" value="05110476.jpg" id="165">244 - O-O</option>
-                        <option class="group-14" value="05110477.jpg" id="166">245 - Oi-OBEus</option>
-                        <option class="group-14" value="1705106.jpg" id="385">245 - Oi-OBEus [duplicate]</option>
-                        <option class="group-14" value="05110478.jpg" id="167">246 - OBEE-OBSTE</option>
-                        <option class="group-14" value="05110479.jpg" id="168">247 - OBSTN-ODO</option>
-                        <option class="group-14" value="05122.jpg" id="192">248 - ODO-OIDQ</option>
-                        <option class="group-14" value="05124.jpg" id="214">249 - OIDA-OMA</option>
-                        <option class="group-14" value="05125.jpg" id="225">250 - OMA-OND</option>
-                        <option class="group-14" value="05123.jpg" id="203">251 - ONDr-OPo</option>
-                        <option class="group-14" value="05126.jpg" id="230">252 - OPt-OPPOa</option>
-                        <option class="group-14" value="05127.jpg" id="231">253 - OPPOr-ORACE</option>
-                        <option class="group-14" value="05128.jpg" id="232">254 - ORAT-ORaT</option>
-                        <option class="group-14" value="05129.jpg" id="233">255 - ORaT-OZ</option>
-                        <option class="group-15" value="051210.jpg" id="172">256 - P-P</option>
-                        <option class="group-15" value="051211.jpg" id="173">257 - P-Pia</option>
-                        <option class="group-15" value="051212.jpg" id="174">258 - Pa-Pii</option>
-                        <option class="group-15" value="051213.jpg" id="175">259 - Pim-Par</option>
-                        <option class="group-15" value="051214.jpg" id="176">260 - Prn-PA</option>
-                        <option class="group-15" value="051215.jpg" id="177">261 - PiA-PiAMTE</option>
-                        <option class="group-15" value="051216.jpg" id="178">262 - PAN-PATiS</option>
-                        <option class="group-15" value="051217.jpg" id="179">263 - PATaTI-PBRATUS</option>
-                        <option class="group-15" value="051218.jpg" id="180">264 - PBRIS-PCEb</option>
-                        <option class="group-15" value="051219.jpg" id="181">265 - PCEdo-PaCO</option>
-                        <option class="group-15" value="051220.jpg" id="182">266 - PaCO-PDCI</option>
-                        <option class="group-15" value="051221.jpg" id="183">267 - PDCI-PE</option>
-                        <option class="group-15" value="051222.jpg" id="184">268 - PE-PEN</option>
-                        <option class="group-15" value="051223.jpg" id="185">269 - PENIA-PF</option>
-                        <option class="group-15" value="051224.jpg" id="186">270 - PF-PGO</option>
-                        <option class="group-15" value="051225.jpg" id="187">271 - PrGO-PHICO</option>
-                        <option class="group-15" value="051226.jpg" id="188">272 - PHICO-PIG</option>
-                        <option class="group-15" value="051227.jpg" id="189">273 - PIGm-PLAr</option>
-                        <option class="group-15" value="051228.jpg" id="190">274 - PLAC-PLIS</option>
-                        <option class="group-15" value="051229.jpg" id="191">275 - PaLIS-PM</option>
-                        <option class="group-15" value="051230.jpg" id="193">276 - PM-PNm</option>
-                        <option class="group-15" value="051231.jpg" id="194">277 - PiNm-PNIARIE</option>
-                        <option class="group-15" value="051232.jpg" id="195">278 - PNIE-PNTb</option>
-                        <option class="group-15" value="051233.jpg" id="196">279 - PNTr-POar</option>
-                        <option class="group-15" value="051234.jpg" id="197">280 - PiO-POLE</option>
-                        <option class="group-15" value="051235.jpg" id="198">281 - POaLE-PiOR</option>
-                        <option class="group-15" value="051236.jpg" id="199">282 - PORo-POTAIRE</option>
-                        <option class="group-15" value="051237.jpg" id="200">283 - POTIS-PPe</option>
-                        <option class="group-15" value="051238.jpg" id="201">284 - PPe-PPAD</option>
-                        <option class="group-15" value="051239.jpg" id="202">285 - PPAT-PPHAR</option>
-                        <option class="group-15" value="051240.jpg" id="204">286 - PPHE-PPOm</option>
-                        <option class="group-15" value="051241.jpg" id="205">287 - PPOr-PPti</option>
-                        <option class="group-15" value="051242.jpg" id="206">288 - PPTI-PoR</option>
-                        <option class="group-15" value="051243.jpg" id="207">289 - PRata-PRI</option>
-                        <option class="group-15" value="051244.jpg" id="208">290 - PaRI-PROS</option>
-                        <option class="group-15" value="051245.jpg" id="209">290 - PaRI-PROS [duplicate]</option>
-                        <option class="group-15" value="051246.jpg" id="210">292 - PaS-PSL</option>
-                        <option class="group-15" value="051247.jpg" id="211">293 - PSNIA-PT</option>
-                        <option class="group-15" value="051248.jpg" id="212">294 - PT-PTAT</option>
-                        <option class="group-15" value="051249.jpg" id="213">295 - PiTATA-PTIr</option>
-                        <option class="group-15" value="051250.jpg" id="215">296 - PTIrc-PaTU</option>
-                        <option class="group-15" value="051251.jpg" id="216">297 - PTUIA-PUEte</option>
-                        <option class="group-15" value="051252.jpg" id="217">298 - PUEIa-PiiUS</option>
-                        <option class="group-15" value="051253.jpg" id="218">299 - PVRA-PYS</option>
-                        <option class="group-16" value="051254.jpg" id="219">300 - Q-Q</option>
-                        <option class="group-16" value="051255.jpg" id="220">301 - Q-Q</option>
-                        <option class="group-16" value="051256.jpg" id="221">302 - Q-Qa</option>
-                        <option class="group-16" value="051257.jpg" id="222">303 - Q-Qe</option>
-                        <option class="group-16" value="051258.jpg" id="223">304 - Qe-Qar</option>
-                        <option class="group-16" value="051259.jpg" id="224">305 - Qas-QiB</option>
-                        <option class="group-16" value="051260.jpg" id="226">306 - QBDAm-QD</option>
-                        <option class="group-16" value="051261.jpg" id="227">307 - QiD-QDBV</option>
-                        <option class="group-16" value="051262.jpg" id="228">308 - QDC-QaI</option>
-                        <option class="group-16" value="051263.jpg" id="229">309 - QUID-QLLA</option>
-                        <option class="group-16" value="14052.jpg" id="301">310 - QaLR-QN</option>
-                        <option class="group-16" value="14053.jpg" id="312">311 - QN-QNTM</option>
-                        <option class="group-16" value="14054.jpg" id="323">312 - QaNTO-QaQ</option>
-                        <option class="group-16" value="14055.jpg" id="334">313 - QQ-QRE</option>
-                        <option class="group-16" value="14056.jpg" id="345">314 - QREs-QiS</option>
-                        <option class="group-16" value="14057.jpg" id="356">315 - QoS-QTN</option>
-                        <option class="group-16" value="14058.jpg" id="367">316 - QTO-QUIBUSa</option>
-                        <option class="group-16" value="14059.jpg" id="378">317 - QUIs-QUUQ</option>
-                        <option class="group-17" value="140510.jpg" id="245">318 - R-R</option>
-                        <option class="group-17" value="140511.jpg" id="256">319 - R-Ro</option>
-                        <option class="group-17" value="140512.jpg" id="267">320 - Roe-RAo</option>
-                        <option class="group-17" value="140513.jpg" id="278">321 - RAr-RC</option>
-                        <option class="group-17" value="140514.jpg" id="285">322 - RCA-RDMC</option>
-                        <option class="group-17" value="140515.jpg" id="286">323 - RDUa-RECIP</option>
-                        <option class="group-17" value="140516.jpg" id="287">324 - RECIPTI-REGaBR</option>
-                        <option class="group-17" value="140517.jpg" id="288">325 - REGIE-RENS</option>
-                        <option class="group-17" value="140518.jpg" id="289">326 - RENT-RESCiBE</option>
-                        <option class="group-17" value="140519.jpg" id="290">327 - RESDAM-RFaGAR</option>
-                        <option class="group-17" value="140520.jpg" id="291">328 - RFIdI-RICG</option>
-                        <option class="group-17" value="140521.jpg" id="292">329 - RICOL-RLTE</option>
-                        <option class="group-17" value="140522.jpg" id="293">330 - RLTIA-RNDE</option>
-                        <option class="group-17" value="140523.jpg" id="294">331 - RNDeT-ROAL</option>
-                        <option class="group-17" value="140524.jpg" id="295">332 - ROALE-RONAL</option>
-                        <option class="group-17" value="140525.jpg" id="296">333 - RONARIE-RQr</option>
-                        <option class="group-17" value="140526.jpg" id="297">334 - RQir-RaTr</option>
-                        <option class="group-17" value="140527.jpg" id="298">335 - RaTr-RXt</option>
-                        <option class="group-18" value="140528.jpg" id="299">336 - S-S</option>
-                        <option class="group-18" value="140529.jpg" id="300">337 - S-Scat</option>
-                        <option class="group-18" value="140530.jpg" id="302">338 - Scoes-Sta</option>
-                        <option class="group-18" value="140531.jpg" id="303">339 - Ste-SACLIJ</option>
-                        <option class="group-18" value="140532.jpg" id="304">340 - SAC LIT-SALT</option>
-                        <option class="group-18" value="140533.jpg" id="305">341 - SALURI-SB</option>
-                        <option class="group-18" value="140534.jpg" id="306">342 - SBe-SBSCiB</option>
-                        <option class="group-18" value="140535.jpg" id="307">343 - SBST-SCDm</option>
-                        <option class="group-18" value="140536.jpg" id="308">344 - SCD-SCIOA</option>
-                        <option class="group-18" value="140537.jpg" id="309">345 - SCIONES-SCOR</option>
-                        <option class="group-18" value="140538.jpg" id="310">346 - SCOS-SCUT</option>
-                        <option class="group-18" value="140539.jpg" id="311">347 - SD-SEC</option>
-                        <option class="group-18" value="140540.jpg" id="313">348 - SEC-SEPn</option>
-                        <option class="group-18" value="140541.jpg" id="314">349 - SEPAa-SFFit</option>
-                        <option class="group-18" value="140542.jpg" id="315">350 - SFIat-SIre</option>
-                        <option class="group-18" value="140543.jpg" id="316">351 - SIg-SIGN</option>
-                        <option class="group-18" value="140544.jpg" id="317">352 - SIGNAT-SIMa</option>
-                        <option class="group-18" value="140545.jpg" id="318">353 - SIMma-SLDS</option>
-                        <option class="group-18" value="140546.jpg" id="319">354 - SLE-SMOM</option>
-                        <option class="group-18" value="140547.jpg" id="320">355 - SMP-SO</option>
-                        <option class="group-18" value="140548.jpg" id="321">356 - SOa-SONI</option>
-                        <option class="group-18" value="140549.jpg" id="322">357 - SOP-SPAme</option>
-                        <option class="group-18" value="140550.jpg" id="324">358 - SPAr-SPEC</option>
-                        <option class="group-18" value="140551.jpg" id="325">359 - SPECvo-SPM</option>
-                        <option class="group-18" value="140552.jpg" id="326">360 - SPM-SPUALR</option>
-                        <option class="group-18" value="140553.jpg" id="327">361 - SPUI-SRI</option>
-                        <option class="group-18" value="140554.jpg" id="328">362 - SRI-SiS</option>
-                        <option class="group-18" value="140555.jpg" id="329">363 - SSs-SSS</option>
-                        <option class="group-18" value="140556.jpg" id="330">364 - SSS-STAC</option>
-                        <option class="group-18" value="140557.jpg" id="331">365 - STAME-STiNGt</option>
-                        <option class="group-18" value="140558.jpg" id="332">366 - STO-SUA</option>
-                        <option class="group-18" value="140559.jpg" id="333">367 - SUAE-SUM</option>
-                        <option class="group-18" value="140560.jpg" id="335">368 - SUO-SYOaC</option>
-                        <option class="group-19" value="140561.jpg" id="336">369 - T-T</option>
-                        <option class="group-19" value="140562.jpg" id="337">370 - T-Tr</option>
-                        <option class="group-19" value="140563.jpg" id="338">371 - Tr-TiBo</option>
-                        <option class="group-19" value="140564.jpg" id="339">372 - TrBA-TEAr</option>
-                        <option class="group-19" value="140565.jpg" id="340">373 - TEBATr-TESti</option>
-                        <option class="group-19" value="140566.jpg" id="341">374 - TEST-THIMO</option>
-                        <option class="group-19" value="140567.jpg" id="342">375 - THO-TIM</option>
-                        <option class="group-19" value="140568.jpg" id="343">376 - TIN-TMD</option>
-                        <option class="group-19" value="140569.jpg" id="344">377 - TMDD-TaNSoe</option>
-                        <option class="group-19" value="140570.jpg" id="346">378 - TaNSt-TP</option>
-                        <option class="group-19" value="140571.jpg" id="347">379 - TiPci-TPR</option>
-                        <option class="group-19" value="140572.jpg" id="348">380 - TPRA-TRIBILIS</option>
-                        <option class="group-19" value="140573.jpg" id="349">381 - TRICS-TTi</option>
-                        <option class="group-19" value="140574.jpg" id="350">382 - TTli-TZ</option>
-                        <option class="group-20" value="140575.jpg" id="351">383 - V-V</option>
-                        <option class="group-20" value="140576.jpg" id="352">384 - V-Vo</option>
-                        <option class="group-20" value="140577.jpg" id="353">385 - Voo-VALT</option>
-                        <option class="group-20" value="140578.jpg" id="354">386 - VAR-UCO</option>
-                        <option class="group-20" value="140579.jpg" id="355">387 - ViCmQ-VEISILE</option>
-                        <option class="group-20" value="140580.jpg" id="357">388 - VEL-VF</option>
-                        <option class="group-20" value="140581.jpg" id="358">389 - UG-VIb</option>
-                        <option class="group-20" value="140582.jpg" id="359">390 - VIc-VICT</option>
-                        <option class="group-20" value="140583.jpg" id="360">391 - VJD-VINTlij</option>
-                        <option class="group-20" value="140584.jpg" id="361">392 - VINTo-VLES</option>
-                        <option class="group-20" value="140585.jpg" id="362">393 - VLI-VM</option>
-                        <option class="group-20" value="140586.jpg" id="363">394 - VMEC-VNTr</option>
-                        <option class="group-20" value="140587.jpg" id="364">395 - UNTA-VON</option>
-                        <option class="group-20" value="140588.jpg" id="365">396 - VONA-VRA</option>
-                        <option class="group-20" value="140589.jpg" id="366">397 - URA-VisE</option>
-                        <option class="group-20" value="140590.jpg" id="368">398 - USo-VTILR</option>
-                        <option class="group-20" value="140591.jpg" id="369">399 - VTM-WDECA</option>
-                        <option class="group-20" value="140592.jpg" id="370">400 - WILLS-VZ</option>
-                        <option class="group-21" value="140593.jpg" id="371">401 - X-XiAN</option>
-                        <option class="group-21" value="140594.jpg" id="372">402 - XANA-XXtiMILIO</option>
-                        <option class="group-22" value="140595.jpg" id="373">403 - Y-YDEPS</option>
-                        <option class="group-22" value="140596.jpg" id="374">404 - YDIOt-YSTIO</option>
-                        <option class="group-23" value="140597.jpg" id="375">405 - Z-ZZ</option>
-                        <option class="group-24" value="140598.jpg" id="376">406 - AMEN-DEINDE</option>
-                        <option class="group-24" value="140599.jpg" id="377">407 - DE-EST</option>
-                        <option class="group-24" value="1405100.jpg" id="235">408 - EST-ET</option>
-                        <option class="group-24" value="1405101.jpg" id="236">409 - EDICTI-JUNGATUR</option>
-                        <option class="group-24" value="1405102.jpg" id="237">410 - LAPIS-QUONDAM</option>
-                        <option class="group-24" value="1405103.jpg" id="238">411 - RADIX-SEXTANS</option>
-                        <option class="group-24" value="1405104.jpg" id="239">412 - ANTIGR-PARAGR</option>
-                        <option class="group-25" value="1405105.jpg" id="240">413 - A-M</option>
-                        <option class="group-25" value="1405106.jpg" id="241">414 - CQ9-I</option>
-                        <option class="group-25" value="1405107.jpg" id="242">415 - I-III</option>
-                        <option class="group-25" value="1405108.jpg" id="243">416 - III-LXXI</option>
-                        <option class="group-25" value="1405109.jpg" id="244">417 - LIIII-Q</option>
-                        <option class="group-25" value="1405110.jpg" id="246">418 - Q9-VII</option>
-                        <option class="group-25" value="1405111.jpg" id="247">419 - VII-XV</option>
-                        <option class="group-25" value="1405112.jpg" id="248">420 - XVtis-XXVI</option>
-                        <option class="group-25" value="1405113.jpg" id="249">421 - 900-X</option>
-                        <option class="group-26" value="1405114.jpg" id="250">422 - 1-1452</option>
-                        <option class="group-26" value="1405115.jpg" id="251">423 - 1454-2or</option>
-                        <option class="group-26" value="1405116.jpg" id="252">424 - 2is-3nos</option>
-                        <option class="group-26" value="1405117.jpg" id="253">425 - 3-5</option>
-                        <option class="group-26" value="1405118.jpg" id="254">426 - 5-7</option>
-                        <option class="group-26" value="1405119.jpg" id="255">427 - 7-9</option>
-                        <option class="group-26" value="1405120.jpg" id="257">428 - 9-0</option>
-
-                    </select>
-                </div>
-            </div>
-
-            <div id="previewSplit" class="split">
-                <div class="fullScreenTrans"><i class="fa fa-share fa-flip-vertical"></i></div>
-                <div class="toolLinks">
-                    <button class="showMe2" onclick="restoreWorkspace();">Show Workspace</button>
-                    <button class="hideMe" style="position: relative;" onclick="hideWorkspaceToSeeImage();" >Hide Workspace</button>
-                </div>
-                <div id="previewDiv">
-
-                </div>
-            </div>
-            <div id="fullpageSplit" class="split">
-                <div class="fullScreenTrans"><i class="fa fa-share fa-flip-vertical"></i></div>
-                <div class="toolLinks">
-                    <button class="showMe2" onclick="restoreWorkspace();">Show Workspace</button>
-                    <button class="hideMe" style="position: relative;" onclick="hideWorkspaceToSeeImage();" >Hide Workspace</button>
-                    <button class="magnifyBtn" style="position: relative;" magnifyImg="full" >Inspect</button>
-                </div>
-                <div id="fullpageSplitCanvas"><img id="fullPageImg" src="" /></div>
-            </div>
-            <div id="historySplit" class="split" class="ui-widget">
-                <div class="fullScreenTrans"><i class="fa fa-share fa-flip-vertical"></i></div>
-                <div class="toolLinks">
-                    <a href="#" >Parsing Only</a>
-                    <a href="#" >Text Only</a>
-                    <a href="#" >Show Notes</a>
-                </div>
-                <div id="historyDiv" class="ui-corner-all ui-widget-content">
-                    <div id="historyViewer">
-                        <div id="historyBookmark" class="historyBookmark"></div>
-                        <img alt="historyViewerImg" class="preloadImage" src="css/custom-theme/images/loadingImg.gif" />
-                    </div>
-                    <div id="historyListing">
-
-                    </div>
-                </div>
-            </div>
-        </div>
-<!--                    Linebreaking Tool-->
-
-        <div id="zoomDiv" class="ui-corner-all"></div>
-        <div id="ruler1"></div><div id="ruler2"></div>
-
-        <div id="requestAccessContainer" style="display: none;">
-            <div id="requestAccess" class="ui-widget ui-corner-all ui-widget-content">
-                <h2 class="ui-widget-header ui-corner-all ui-state-error">Restricted Access</h2>
-                <div class="ui-state-error-text" style="text-align: center;"><span style="display: inline-block;" class="ui-icon ui-icon-alert"></span>You do not have permission to view this manuscript!</div>
-                <br />
-                <form action="requestAccess.jsp" method="POST">
-                    <p title="">Request access for from the <span class="manController" title="">TPEN user who controls access</span> to this document.</P
-                    <textarea name="reason" placeholder="Add any additional request details."></textarea>
-                    <input type="hidden" name="ms" value="">
-                    <input type="hidden" name="projectID" value="">
-                    <input class="ui-button tpenButton clear right" type="submit" name="submitted" value="Send Request"/>
-                </form>
-                <a class="returnButton exitPage" href="index.jsp">Return Home</a>
-            </div>
-        </div>
-
-        <div id="genericIssue" class="ui-widget ui-corner-all ui-widget-content">
-            <h2 class="ui-widget-header ui-corner-all">Data Error</h2>
-            <p>
-                There was an issue saving some of your data.  Please refresh the page to resume your activity.  If you continue to see this error
-                please contact the T&#8209;PEN Admin.
-            </p>
-            <div class="clear right buttons">
-                <button class="ui-button tpenButton" onclick="document.location.reload();">OK</button>
-            </div>
-        </div>
-
-        <div id="iprAccept" class="ui-widget ui-corner-all ui-widget-content">
-            <h2 class="ui-widget-header ui-corner-all">Accept IPR Agreement</h2>
-            <p>Please read and accept the IPR agreement below to access <span id="ipr_who" class="loud"></span>. You only need to do this once.</p>
-            <div id="iprAgreement" class="notice"></div>
-                <span id="ipr_user" class="right small"></span>
-                <div class="clear right buttons">
-                <button id="accept_ipr" class="ui-button tpenButton" onclick="">I Agree</button>
-                <button class="ui-button tpenButton" onclick="document.location='index.jsp'">I do not agree</button>
-            </div>
-        </div>
-
-
-        <div id="overlay" class="ui-widget-overlay">
-            <div id="overlayNote">Click the page to return</div>
-        </div>
-        <div id="location" class="ui-widget-content ui-corner-tr">
+    <div id="overlay" class="ui-widget-overlay">
+        <div id="overlayNote">Click the page to return</div>
+    </div>
+    <div id="location" class="ui-widget-content ui-corner-tr">
         <!--<select class="clear left" onchange="Interaction.navigateTo(this);">
             <option SELECTED>Jump to page</option>
         </select>-->
+    </div>
+    <div class="trexHead"></div>
+
+    <script>
+                                                          //Page load event triggers and attached here.
+                                                          $(document).ready(function () {
+                                                              dailyTip();
+                                                              attachWindowResize();
+                                                              $("#imgTop, #imgBottom").css("height", "400px");
+                                                              $("#imgTop img, #imgBottom img").css("height", "400px");
+                                                              $("#imgTop img, #imgBottom img").css("width", "auto");
+                                                              $('.transcriptionImage').attr('src', "images/loading2.gif"); //background loader if there is a hang time waiting for image
+                                                              // load manifest from URL
+                                                              tpen.screen.params = {}; location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (s, k, v) { tpen.screen.params[k] = v });
+                                                              if (tpen.screen.params.manifest) {
+                                                                  loadTranscription(tpen.screen.params.manifest);
+                                                              }
+                                                              else {
+                                                                  $('#transcriptionTemplate').hide();
+                                                                  $('#setTranscriptionObjectArea').show();
+                                                                  $(".instructions").show();
+                                                                  $(".hideme").show();
+                                                              }
+                                                              $("#pageJump").on("change", function () {
+                                                                  var a = $(this).find("option:selected");
+                                                                  var b = a.attr("folioNum");
+                                                                  pageJump(b);
+                                                              });
+                                                              $(document).on("click", ".fullScreenTrans", fullPage);
+                                                              $("#imgTop").hover(
+                                                                  function () {
+                                                                      $('.activeLine').css('box-shadow', '0 0 15px 1em rgba(0,0,0,.4)');
+                                                                  },
+                                                                  function () {
+                                                                      $('.activeLine').css('box-shadow', '0 0 15px 0 rgba(0,0,0,1)');
+                                                                  }
+                                                              );
+
+                                                              document.addEventListener("mousewheel", function (e) {
+                                                                  if (tpen.screen.isMagnifying) {
+                                                                      event.preventDefault();
+                                                                      var wDelta = e.wheelDelta < 0 ? 'down' : 'up';
+                                                                      if (wDelta === "up") {
+                                                                          if (tpen.screen.zoomMultiplier < 10) {
+                                                                              tpen.screen.zoomMultiplier += .4;
+                                                                              $(document).trigger('mousemove');
+                                                                          }
+                                                                      }
+                                                                      else {
+                                                                          if (tpen.screen.zoomMultiplier > .5) {
+                                                                              tpen.screen.zoomMultiplier -= .4;
+                                                                              $(document).trigger('mousemove');
+                                                                          }
+                                                                      }
+                                                                      $("#zoomat").text(Math.round(tpen.screen.zoomMultiplier * 10) / 10 + "x");
+                                                                  }
+                                                              });
+
+                                                              $(document)
+                                                                  .dblclick(function () {
+                                                                      if (tpen.screen.isMagnifying) {
+                                                                          stopMagnify();
+                                                                      }
+                                                                  })
+                                                                  .keydown(function (event) {
+                                                                      var ctrlDown = false,
+                                                                          ctrlKey = 17,
+                                                                          cmdKey = 91;
+                                                                      if (tpen.screen.isMagnifying) {
+                                                                          //back out
+                                                                          if ((event.which === 109) || (event.which === 189) || (event.which === 173)) { //173  = - in firefox
+                                                                              if (tpen.screen.zoomMultiplier > .5) {
+                                                                                  tpen.screen.zoomMultiplier -= .4;
+                                                                                  $(document).trigger('mousemove');
+                                                                              }
+                                                                          }
+                                                                          //ease in
+                                                                          else if ((event.which === 107) || (event.which === 187) || (event.which === 61)) { // 61 = + in firefox
+                                                                              if (tpen.screen.zoomMultiplier < 10) {
+                                                                                  tpen.screen.zoomMultiplier += .4;
+                                                                                  $(document).trigger('mousemove');
+                                                                              }
+                                                                          }
+                                                                          //esc
+                                                                          else if (event.which === 27) {
+                                                                              stopMagnify();
+                                                                          }
+                                                                          else {
+
+                                                                          }
+                                                                          $("#zoomat").text(Math.round(tpen.screen.zoomMultiplier * 10) / 10 + "x");
+                                                                      }
+                                                                      else if (event.which == 18 || event.altKey && (tpen.screen.liveTool !== "parsing")) {
+                                                                          //console.log('ALT KEY');
+                                                                          var lineForEditing = $(".activeLine");
+                                                                          lineForEditing.resizable();
+                                                                          if (event.altKey && event.ctrlKey || event.altKey && event.metaKey) {
+                                                                              // hide workspace and move image
+                                                                              tpen.screen.toggleMoveImage(event);
+                                                                          }
+                                                                          else if (event.which === 38) { //up.  Go to prev line
+                                                                              previousTranscriptlet();
+                                                                          }
+                                                                          else if (event.which === 40) { //down. Go to next line.
+                                                                              nextTranscriptlet();
+                                                                          }
+                                                                      }
+                                                                      else if (event.which === 27) {
+                                                                          //Esc during any active tool means stop the tool.  In this case, our only worry is moving the image around.  We may add others later.
+                                                                          $("#imgTop, #imgBottom").unbind("mousemove");
+                                                                          $("#imgTop, #imgBottom").unbind("mousedown");
+                                                                          $("#imgTop, #imgBottom").unbind("mouseup");
+                                                                          //still need hover event on imgTop
+                                                                          $("#imgTop").css("cursor", "default");
+                                                                          $("#imgBottom").css("cursor", "default");
+                                                                          $(".magnifyBtn").removeClass("selected");
+                                                                          $("#moveImage").removeClass("selected");
+                                                                          $(".transcriptlet").children("textarea").removeClass("imageMove").removeAttr("disabled");
+                                                                          if (tpen.screen.liveTool && tpen.screen.liveTool !== "none" && tpen.screen.liveTool !== "parsing") {
+                                                                              fullPage();
+                                                                          }
+                                                                      }
+                                                                      else if (event.which === 13 && (tpen.screen.liveTool !== "parsing")) { //enter
+                                                                          if (event.shiftKey || event.altKey) return true;
+                                                                          event.preventDefault();
+                                                                          Linebreak.moveTextToNextBox();
+                                                                          return nextTranscriptlet();
+                                                                      }
+                                                                      else if (event.which === 9 && (tpen.screen.liveTool !== "parsing")) { // tab
+                                                                          //TAB hijack to keep behavior as expected
+                                                                          var inForm = $(document.activeElement).is('input,textarea') && !$(document.activeElement).parent().is('.transcriptlet');
+                                                                          if (event.which === 9 && !inForm) {
+                                                                              event.preventDefault();
+                                                                              event.stopPropagation();
+                                                                              if (event.shiftKey) $("#prevLine").click();
+                                                                              else $("#nextLine").click();
+                                                                          }
+                                                                      }
+                                                                      else if (event.ctrlKey || event.metaKey && (tpen.screen.liveTool !== "parsing")) { //ctrl
+                                                                          //This is also how you select a new tab in the browser.
+                                                                          if (event.which >= 49 && event.which <= 57) { //insert a special char
+                                                                              event.preventDefault();
+                                                                              event.stopPropagation();
+                                                                              //find the index in the special chars field and insert it.
+                                                                              var hotkey = $("#charactersPopin").children().eq(String.fromCharCode(event.which) - 1);
+                                                                              hotkey.click(); //populating to the text field fires in onclick to this element, we have to register the change.
+                                                                          }
+                                                                          else if (event.ctrlKey && event.which === 36) { //HOME key.  Jump to first line.
+                                                                              event.preventDefault();
+                                                                              event.stopPropagation();
+                                                                              if ($("div[pair='A1']").length) {
+                                                                                  $("div[pair='A1']").click();
+                                                                              }
+                                                                          } else if (event.shiftKey && !tpen.screen.isPeeking && !tpen.screen.isMagnifying) {
+                                                                              // Peek-Zoom
+                                                                              tpen.screen.peekZoom(false);
+                                                                          }
+                                                                      }
+                                                                      else {
+
+                                                                      }
+                                                                  })
+                                                                  .keyup(function (event) {
+                                                                      if (tpen.screen.isMagnifying) {
+                                                                          return event;
+                                                                      }
+                                                                      //|| event.altKey is true while it is held down.
+                                                                      if (event.which == 18) {
+                                                                          $("#imgTop,#imgBottom").unbind("mousemove").css("cursor", "default");
+                                                                          $("#imgTop, #imgBottom").unbind("mousedown");
+                                                                          $("#imgTop, #imgBottom").unbind("mouseup");
+                                                                          var lineForEditing = $(".transcriptlet[lineserverid='" + $(".activeLine").attr("lineserverid") + "']");
+                                                                          updateLine(lineForEditing, false, true); //update the active line in case it was bumped.
+                                                                      }
+                                                                      else if (tpen.screen.isPeeking && (!event.shiftKey || !(event.ctrlKey || event.metaKey))) {
+                                                                          // cancel Peek-Zoom
+                                                                          tpen.screen.peekZoom(true);
+                                                                      }
+                                                                      else if (tpen.screen.toggleMove && (!event.altKey || !event.ctrlKey || !event.metaKey)) {
+                                                                          //cancel show and/or move image.  Must do this here because it is possible the user never moves the image and moveImg() won't handle the cancel case.
+                                                                          //Do not check against tpen.screen.isMoving, just make sure we are not peeking (they share the ctrlKey or metaKey, so they both tend to want to fire).
+                                                                          tpen.screen.toggleMoveImage(false);
+                                                                      }
+                                                                  });
+
+                                                              $(".workspaceHandle").mousedown(function (event) { moveWorkspace(event); })
+                                                                  .css("cursor", "n-resize");
+                                                          });
+
+    </script>
+    <noscript>
+        <div id="noscript">
+            You are blocking scripts on this page. T-PEN uses
+            <code>googleapis.com</code> and <code>javascript</code> for necessary functionality.
         </div>
-        <div class="trexHead"></div>
-        
+        <div id="trexHead" style="display:block"></div>
+    </noscript>
+</body>
 
-        <script>
-
-    var leftovers = tpen.project.remainingText;
-        // get from StringEscapeUtils.escapeJavaScript(thisProject.getLinebreakText())
-    if(leftovers && leftovers.length){
-        $("#lbText").html(unescape(leftovers));
-        $("#linebreakNoTextContainer").hide();
-    } else {
-        $("#linebreakTextContainer").hide();
-        $("#linebreakNoTextContainer").show();
-    }
-    function initLinks(){
-        var uploadLocation = "uploadText.jsp?p="+tpen.project.folios[tpen.screen.currentFolio].folioNumber
-        +"&projectID="+tpen.project.id;
-        $("#uploadText").addClass("exitPage").add("#newText").attr("href",uploadLocation);
-
-        // add projectID to buttons.jsp links
-        $(".editButtons").addClass("exitPage").attr("href","buttons.jsp?p="
-            + tpen.project.folios[tpen.screen.currentFolio].folioNumber
-            + "&projectID=" + tpen.project.id+"#tabs-1");
-        $(".editXMLs").addClass("exitPage").attr("href","buttons.jsp?p="
-            + tpen.project.folios[tpen.screen.currentFolio].folioNumber
-            + "&projectID=" + tpen.project.id+"#tabs-2");
-        $("#projectsBtn").attr("href", "project.jsp?projectID="+tpen.project.id);
-    }
-    
-    //Page load event triggers and attached here.
-    $(document).ready(function(){
-        dailyTip();
-        attachWindowResize();
-        $("#imgTop, #imgBottom").css("height", "400px");
-        $("#imgTop img, #imgBottom img").css("height", "400px");
-        $("#imgTop img, #imgBottom img").css("width", "auto");
-        $('.transcriptionImage').attr('src', "images/loading2.gif"); //background loader if there is a hang time waiting for image
-        //check if logged in
-        var url = "geti";
-        $.ajax({
-            url: url,
-            type: "GET",
-            dataType: "json",
-            success: function(data){
-                //tpen.user.UID = JSON.parse(data);
-                if(data.uname && data.uname !== ""){
-                    var theURL = window.location.href;
-                    if (theURL.indexOf("projectID=") > -1){
-                        var projID = getURLVariable("projectID");
-                        if(theURL.indexOf("parsing=true") > -1){
-                            loadTranscription(projID, "parsing");
-                        }
-                        else{
-                            loadTranscription(projID, "");
-                        }
-                    }
-                    else {
-                        $('#transcriptionTemplate').hide();
-                        $('#setTranscriptionObjectArea').show();
-                        $(".instructions").show();
-                        $(".hideme").show();
-                    }
-
-                }
-                else {
-                    tpen.user.UID = 0;
-                    var theURL = window.location.href;
-                    return window.location.href = "index.jsp?ref="+encodeURIComponent(theURL);
-                }
-                //only get iframes after confirmed user authentication
-            },
-            error: function(jqXHR,error, errorThrown) {
-                tpen.user.UID = 0;
-                var theURL = window.location.href;
-                return window.location.href = "index.jsp?ref="+encodeURIComponent(theURL);
-            }
-        });
-
-
-        //get all project metadata so that we can get the project and user tools.
-        $(".split").find('iframe').css("height", window.innerHeight+"px");
-        $('select').find('option:eq(0)').prop("selected",true); //stops certain bugs caused by previously selected dropdown options.
-        $('select').removeAttr("disabled");
-        $("#pageJump").on("change",function(){
-            var parsing = "";
-            if($("#parsingDiv").is(":visible")){
-                parsing = "parsing";
-            }
-            var a = $(this).find("option:selected");
-            var b = a.attr("folioNum");
-            pageJump(b, parsing);
-        });
-         $("#compareJump").on("change",function(){
-            var a = $(this).find("option:selected");
-            var b = a.attr("folioNum");
-            compareJump(b);
-        });
-         $("#splitScreenTools").on("change",function(event){
-            var a = $(this).find("option:selected");
-            var b = a.attr("splitter");
-            fullPage();
-            splitPage(event,b);
-        });
-
-        $('#transcriptionFile').on("change", function(event){;
-            var selectedFile = event.target.files[0];
-            var reader = new FileReader();
-            var result = $('#transcriptionText')
-            reader.onload = function(event){
-              var fileContent = event.target.result;
-              result.html(fileContent);
-              $('#transcriptionTemplate').hide();
-            };
-            reader.readAsText(selectedFile);
-        });
-
-        $(document).on("click",".fullScreenTrans",fullPage);
-
-//        $("#closeHelp").click(function(){
-//            //fullPage();
-//            $("#help").css({"left":"100%"}).fadeOut(1000);
-//        });
-        
-        $("#helpMe").click(function(event){Help.revealHelp(event);});
-
-        $("#charactersPopin").on("change", function(event){
-            var val = $("#charactersPopin").val();
-            addchar(val, "");
-        });
-
-        $("#xmlTagPopin").on("change", function(event){
-            var val = escape($("#xmlTagPopin").val());
-            var fullTag = $("#xmlTagPopin option:selected").attr("title");
-            var closingTag = "";
-            insertAtCursor(val, closingTag, fullTag, false);
-
-        });
-
-        $(".magnifyBtn").click(function(event){
-            if ($(this).hasClass("ui-state-active")){
-                $('#zoomDiv').hide();
-                restoreWorkspace();
-                tpen.screen.isMagnifying = false;
-                $(document).off("mousemove");
-                $(this).removeClass("ui-state-active");
-            } else {
-                $(this).addClass("ui-state-active");
-                tpen.screen.isMagnifying=true;
-                magnify($(this).attr("magnifyImg"),event);
-            }
-        });
-
-        $("#canvasControls").click(function(event){
-            splitPage(event,"controls");
-        });
-
-        $("#rtlSwitch").click(function(event){
-            //we will already have the lines dereferenced at this point, always.
-            var annos = tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources;
-            drawLinesDesignateColumns(annos, tpen.screen.liveTool, true);
-        });
-
-        $("#ltrSwitch").click(function(event){
-            var annos = tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources;
-            reorderLinesForLTR(annos);
-        });
-
-//        var lineColor = tpen.screen.colorThisTime.replace(".4", ".9");
-        $("#imgTop").hover(
-            function(){
-                $('.activeLine').css('box-shadow', '0 0 15px 1em rgba(0,0,0,.4)');
-            },
-            function(){
-                $('.activeLine').css('box-shadow', '0 0 15px 0 rgba(0,0,0,1)');
-            }
-        );
-
-//        $("#imgBottom").hover(
-//            function(){
-//                $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor);
-//            },
-//            function(){
-//                var lineColor2 = lineColor.replace(".9", ".4");
-//                $('.activeLine').css('box-shadow', '0px 0px 15px 8px '+lineColor2);
-//            }
-//        );
-
-        document.addEventListener("mousewheel", function(e){
-            if(tpen.screen.isMagnifying){
-                event.preventDefault();
-                var wDelta = e.wheelDelta < 0 ? 'down' : 'up';
-                if(wDelta === "up"){
-                    if(tpen.screen.zoomMultiplier < 10){
-                        tpen.screen.zoomMultiplier += .4;
-                        $(document).trigger('mousemove');
-                    }
-                }
-                else{
-                    if(tpen.screen.zoomMultiplier > .5){
-                        tpen.screen.zoomMultiplier -= .4;
-                        $(document).trigger('mousemove');
-                    }
-                }
-                $("#zoomat").text(Math.round(tpen.screen.zoomMultiplier*10)/10+"x");
-            }
-        });
-
-        $(document)
-            .dblclick(function(){
-                if(tpen.screen.isMagnifying){
-                    stopMagnify();
-                }
-        })
-            .keydown(function(event){
-            var ctrlDown = false,
-            ctrlKey = 17,
-            cmdKey = 91;
-            if(tpen.screen.isMagnifying){
-                //back out
-                if ((event.which === 109) || (event.which === 189) || (event.which === 173) ){ //173  = - in firefox
-                    if(tpen.screen.zoomMultiplier > .5){
-                        tpen.screen.zoomMultiplier -= .4;
-                        $(document).trigger('mousemove');
-                    }
-                }
-                //ease in
-                else if ((event.which === 107) || (event.which === 187) || (event.which === 61)){ // 61 = + in firefox
-                    if(tpen.screen.zoomMultiplier < 10){
-                        tpen.screen.zoomMultiplier += .4;
-                        $(document).trigger('mousemove');
-                    }
-                }
-                //esc
-                else if(event.which === 27){
-                    stopMagnify();
-                }
-                else {
-
-                }
-                $("#zoomat").text(Math.round(tpen.screen.zoomMultiplier*10)/10+"x");
-            }
-            else if (event.which == 112) { //F1 for help
-                event.preventDefault();
-                Help.revealHelp(event);
-                //$("#helpMe").click();
-            }
-            else if (event.which == 18 || event.altKey && (tpen.screen.liveTool !=="parsing")){
-               //console.log('ALT KEY');
-            var lineForEditing = $(".activeLine");
-               lineForEditing.resizable();
-               if(event.altKey&&event.ctrlKey || event.altKey&&event.metaKey){
-                   // hide workspace and move image
-                   tpen.screen.toggleMoveImage(event);
-               }
-               else if(event.which === 38){ //up.  Go to prev line
-                   previousTranscriptlet();
-               }
-               else if(event.which === 40){ //down. Go to next line.
-                   nextTranscriptlet();
-               }
-            }
-            else if (event.which === 27){
-                //Esc during any active tool means stop the tool.  In this case, our only worry is moving the image around.  We may add others later.
-                $("#imgTop, #imgBottom").unbind("mousemove");
-                $("#imgTop, #imgBottom").unbind("mousedown");
-                $("#imgTop, #imgBottom").unbind("mouseup");
-                //still need hover event on imgTop
-                $("#imgTop").css("cursor", "default");
-                $("#imgBottom").css("cursor", "default");
-                $(".magnifyBtn").removeClass("selected");
-                $("#moveImage").removeClass("selected");
-                $(".transcriptlet").children("textarea").removeClass("imageMove").removeAttr("disabled");
-                if(tpen.screen.liveTool && tpen.screen.liveTool !== "none" && tpen.screen.liveTool !== "parsing"){
-                    fullPage();
-                }
-            }
-            else if (event.which === 13 && (tpen.screen.liveTool !=="parsing")){ //enter
-                if (event.shiftKey || event.altKey) return true;
-                event.preventDefault();
-                Linebreak.moveTextToNextBox();
-                return nextTranscriptlet();
-            }
-            else if (event.which === 9 && (tpen.screen.liveTool !=="parsing")){ // tab
-            //TAB hijack to keep behavior as expected
-                var inForm = $(document.activeElement).is('input,textarea') && !$(document.activeElement).parent().is('.transcriptlet');
-                if(event.which === 9 && !inForm){
-                    event.preventDefault();
-                    event.stopPropagation();
-                    if(event.shiftKey) $("#prevLine").click();
-                    else $("#nextLine").click();
-                }
-            }
-            else if (event.ctrlKey || event.metaKey && (tpen.screen.liveTool !=="parsing")) { //ctrl
-                //This is also how you select a new tab in the browser.
-                if(event.which >= 49 && event.which <= 57){ //insert a special char
-                    event.preventDefault();
-                    event.stopPropagation();
-                    //find the index in the special chars field and insert it.
-                    var hotkey = $("#charactersPopin").children().eq(String.fromCharCode(event.which)-1);
-                    hotkey.click(); //populating to the text field fires in onclick to this element, we have to register the change.
-                }
-                else if(event.ctrlKey && event.which === 36){ //HOME key.  Jump to first line.
-                    event.preventDefault();
-                    event.stopPropagation();
-                    if($("div[pair='A1']").length){
-                        $("div[pair='A1']").click();
-                    }
-                } else if (event.shiftKey && !tpen.screen.isPeeking && !tpen.screen.isMagnifying) {
-                    // Peek-Zoom
-                    tpen.screen.peekZoom(false);
-                }
-            }
-            else {
-
-            }
-            })
-            .keyup(function(event){
-                if(tpen.screen.isMagnifying){
-                    return event;
-                }
-                //|| event.altKey is true while it is held down.
-                if(event.which == 18){
-                    $("#imgTop,#imgBottom").unbind("mousemove").css("cursor", "default");
-                    $("#imgTop, #imgBottom").unbind("mousedown");
-                    $("#imgTop, #imgBottom").unbind("mouseup");
-                    var lineForEditing = $(".transcriptlet[lineserverid='" + $(".activeLine").attr("lineserverid") + "']");
-                    updateLine(lineForEditing, false, true); //update the active line in case it was bumped.
-                }
-                else if(tpen.screen.isPeeking && (!event.shiftKey || !(event.ctrlKey||event.metaKey))){
-                    // cancel Peek-Zoom
-                    tpen.screen.peekZoom(true);
-                }
-                else if(tpen.screen.toggleMove && (!event.altKey || !event.ctrlKey || !event.metaKey)){
-                    //cancel show and/or move image.  Must do this here because it is possible the user never moves the image and moveImg() won't handle the cancel case.
-                    //Do not check against tpen.screen.isMoving, just make sure we are not peeking (they share the ctrlKey or metaKey, so they both tend to want to fire).
-                    tpen.screen.toggleMoveImage(false);
-                }
-            });
-
-            $("#parsingBtn").click(function(){
-                if(tpen.screen.isFullscreen)tpen.screen.isUnadjusted = true;
-                tpen.screen.isFullscreen = false;
-                hideWorkspaceForParsing();
-                $("#confirmParsingInst").show();
-                $("#parsingBtn").css("box-shadow", "");
-            });
-
-           $(".workspaceHandle").mousedown(function(event){moveWorkspace(event);})
-            .css("cursor","n-resize");
-
-
-
-            $("#parseOptions .tpenButton").click(function(event){
-                var show = $(this).attr("show");
-                $(document).unbind("mousemove");
-                $(document).unbind("mousedown");
-                $(document).unbind("mouseup");
-                $("#imgTop").css("cursor", "default");
-                $("#imgBottom").css("cursor", "default");
-                $(".parsing").removeClass("adjustable");
-                $(".parsing").unbind('mousemove');
-                $("#ruler1").hide();
-                $("#ruler2").hide();
-                var thisID = $(this).attr("id");
-                $(".parsingToolButtons").find(".tpenButton").removeClass("selected");
-                toggleSelected($(this).parent(), true);
-                toggleIcon($(this).attr("id"));
-                if (thisID == "createColumn" || thisID == "destroyColumn" || thisID == "clearColumns" || thisID == "adjustColumn") {
-                    $("#addLines").removeClass("active");
-                    $("#mergeLines").removeClass("active");
-                    $("#removeLine").removeClass("active");
-                    $("#ctrlColumnsInst").find(".startHide").hide();
-                    $("#"+show).fadeIn(800);
-                    $("#ctrlColumnsInst").find(".activeParsingTool").fadeIn(800);
-                    $("#ctrlLinesInst").find(".activeParsingTool").fadeOut(800);
-                    $(".parsing").unbind();
-                    linesToColumns();
-                    if(thisID == "adjustColumn"){
-                        adjustColumn(event);
-                    }
-                    if (thisID == "createColumn"){
-                        $.each($(".parsingColumn"), function(){
-                            $(this).removeClass("parsingColumnSelected");
-                        });
-
-                        var isCreating = true;
-                        //adjustColumn(event);
-                        ////console.log("New or reparse column");
-                        var offset = $('#imgTop').offset();
-                        var point = {};
-                        var deltaPoint = {x:0,y:0};
-                        $(".parsingColumn").off();
-                        $(".parsingColumn").unbind();
-                        $(document).bind({
-                                mousedown: function(event){
-                                    //This bit of mouse down ensures it only fires on left mouse click.
-                                    event = event || window.event;
-                                    if(event.pageY <= offset.top || event.pageX <= offset.left || event.pageX >= (offset.left + $("#imgTop").width())){ //If you try to draw off of imgTop....
-                                        return false;
-                                    }
-                                    if ("buttons" in event) {
-                                        if(!event.buttons === 1){
-                                            return false;
-                                        }
-                                    }
-                                    else{
-                                        var check = event.which || event.button;
-                                        if(check!==1){
-                                            return false;
-                                        }
-                                    }
-// Why this? It stops it from working when overlapping an existing column 3-9-17                                    
-//                                    if ((event.target.className.indexOf("transcriptionImage") === -1 )){
-//                                        isCreating = false;
-//                                        return true;
-//                                    }
-                                    //else{
-                                    event.preventDefault();
-                                    var newCol = "<div id='newCol' class='parsingColumn ui-resizable' style='z-index:1000; background-color: yellow;'></div>";
-                                    point = {x:event.pageX - offset.left,y:event.pageY - offset.top};
-                                    $(newCol).insertBefore($("#imgTop img")).css({
-                                        'position'  : 'absolute',
-                                        'top': point.y,
-                                        'left': point.x,
-                                        'min-width' : "5px",
-                                        'min-height': "5px"
-                                    });
-                                    //}
-
-                                },
-                                mousemove:  function(event){
-                                    event.preventDefault();
-                                    deltaPoint = {
-                                        x: event.pageX-offset.left-point.x,
-                                        y: event.pageY-(point.y)
-                                    };
-                                    if (deltaPoint.x < 0) {
-                                      // right to left drawing
-                                      $("#newCol").css("left", point.x + deltaPoint.x);
-                                    }
-                                    if (deltaPoint.y < 0) {
-                                      // bottom to top drawing
-                                      $("#newCol").css("top", point.y  + deltaPoint.y);
-                                    }
-                                    $("#newCol").css({
-                                      "width": Math.abs(deltaPoint.x),
-                                      "height": Math.abs(deltaPoint.y) - 25 //header (.topTrim)
-                                    });
-                                },
-                                mouseup:    function(event){
-                                    event.preventDefault();
-                                    var $newCol = $("#newCol");
-                                    if(event.pageY <= offset.top || event.pageX <= offset.left || event.pageX >= (offset.left + $("#imgTop").width())){ //If you try to draw off of imgTop....
-                                        $newCol.remove();
-                                        return false;
-                                    }
-                                    $("#parsingCover").show();
-                                    if (!isCreating){
-                                        $(document).unbind("mousemove");
-                                        $(document).unbind("mousedown");
-                                        $(document).unbind("mouseup");
-                                        $("#imgTop").css("cursor", "default");
-                                        $("#imgBottom").css("cursor", "default");
-                                        return true;
-                                    }
-                                    
-                                    $newCol.attr({
-                                        "lineserverid"   : "-1",
-                                        "newline"       : true,
-                                        "newcol"        : true,
-                                        "linetop"       : parseFloat($newCol.css("top")) / $("#imgTop").height() * 100,
-                                        "lineleft"      : parseFloat($newCol.css("left")) / $("#imgTop").width() * 100,
-                                        "linewidth"     : $newCol.width() / $("#imgTop").width() * 100,
-                                        "lineheight"    : $newCol.height() / $("#imgTop").height() * 100,
-                                        "id"            : "",
-                                        "hastranscription": false
-                                    });
-                                    $newCol.css("background-color","transparent");
-                                    // Prevent tiny columns on accident
-                                    if (parseInt($newCol.attr('linewidth'))+parseInt($newCol.attr('lineheight')) < 12) {
-                                        $newCol.remove();
-                                        $("#parsingCover").hide();
-                                        return true;
-                                    }
-                                    tpen.screen.isAddingLines = true;
-                                    var newY = parseFloat($newCol.css("top")) / $("#imgTop").height() * 100;
-                                    var newX = parseFloat($newCol.css("left")) / $("#imgTop").width() * 100;
-                                    var newH = $newCol.height() / $("#imgTop").height()* 100;
-                                    var newW = $newCol.width() / $("#imgTop").width() * 100;
-
-                                    //The column is now a line, so put that into the UI and save it to the DB.
-                                    var columnIsLine =$(
-                                    "<div class='parsing newColumn' style='\n\
-                                        top:"+newY+"%; \n\
-                                        left:"+newX+"%; \n\
-                                        height:"+newH+"%; \n\
-                                        width:"+newW+"%; \n\
-                                        z-index : -10;\n\
-                                        ' lineserverid=''\n\
-                                        linetop='"+newY+"'\n\
-                                        lineleft='"+newX+"'\n\
-                                        lineheight='"+newH+"'\n\
-                                        linewidth='"+newW+"'>\n\
-                                    </div>");
-                                    if(isCreating){
-                                        saveNewLine(null,columnIsLine);
-                                        $("#imgTop").append(columnIsLine);
-                                    }
-                                    //adjustColumn(); //Do this so that the new column is adjustable.
-                                    $("#createColumn").ajaxStop(function(){
-                                        $(this).click()
-                                        .unbind("ajaxStop");
-                                        isCreating = false;
-                                    });
-                                    //$("#imgTop").unbind("mousemove");
-                                    //$("#imgTop").unbind("mousedown");
-                                    //$("#imgTop").unbind("mouseup");
-                                    $("#imgTop").css("cursor", "default");
-                                    $("#imgBottom").css("cursor", "default");
-                                }
-
-                        });
-//                                .children()
-//                        .bind({
-//                            mousedown: function(event){ //Stop propogation on the children of #imgTop
-//                                event.stopImmediatePropagation();
-//                                $(this).parent().trigger('mousedown');
-//                            },
-//                            mousemove: function(event){
-//                                event.stopImmediatePropagation();
-//                                $(this).parent().trigger('mousemove');
-//                            }, 
-//                            mouseup: function(event){
-//                                event.stopImmediatePropagation();
-//                                $(this).parent().trigger('mouseup');
-//                            }
-//                        });
-                    }
-                    if (thisID === "destroyColumn") {
-                      //prep for column adjustment
-                      $.each($(".parsingColumn"), function(){
-                            $(this).removeClass("parsingColumnSelected");
-                        });
-                      $(".parsingColumn").bind({
-                        mouseenter: function(pe){
-                          $(pe.target).addClass("parsingColumnSelected");
-                        },
-                        mouseleave: function(pe){
-                          $(pe.target).removeClass("parsingColumnSelected");
-                        },
-                        click: function(pe){
-                          removeColumn($(pe.target));
-                        }
-                      });
-                    }
-                    if (thisID === "clearColumns") {
-                            //prep for column adjustment
-                            var columnSet = $(".parsingColumn");
-                            columnSet.addClass("parsingColumnSelected");
-                            //var iconToUse = $('<span class="pull-left fa fa-circle"></span>');
-                            var columnText = (columnSet.size() === 1) ? "Destroy This Column" : "Destroy "+columnSet.size()+" Columns";
-                            var cfrm = confirm("Destroy "+columnSet.size()+" Column(s)?  The transcription data will be lost.\n\nContinue?");
-                            if (!cfrm){
-                                return false;
-                            }
-                            else{
-                                destroyPage();
-                            }
-//                            $(".destroyPage").html('<span class="pull-left fa fa-circle"></span>'+columnText+'')
-//                            .bind('click', function(){destroyPage();})
-                    }
-                }
-                else if (thisID == "addLines" || thisID == "mergeLines" || thisID==="removeLine" || thisID == "adjustLines") {
-                    $("#ctrlLinesInst").find(".startHide").hide();
-                    $("#"+show).fadeIn(800);
-                    $("#ctrlColumnsInst").find(".activeParsingTool").fadeOut(800);
-                    $("#ctrlLinesInst").find(".activeParsingTool").fadeIn(800);
-                    $("#imgTop").children(".line").addClass("parsing").removeClass("line");
-                    $(".parsing").css("z-index", "5");
-                    $('.parsing').unbind();
-                    $(".parsing").css('cursor','default');
-                    $(".parsingColumn").remove();
-                    if (thisID == "adjustLines") {
-                        $("#adjustLine").addClass("active");
-                        $("#addLines").removeClass("active");
-                        $("#mergeLines").removeClass("active");
-                        $("#removeLine").removeClass("active");
-                        //prep for adjustment
-                        $("#ruler1").hide();
-                        $("#ruler2").hide();
-                        var thisLineID = -1;
-                        var originalW = 1;
-                        var thisLine;
-                        $(".parsing").addClass("adjustable").removeClass("line");
-                        if($(".adjustable").hasClass("ui-resizable")){
-                          $(".adjustable").has(".ui-resizable").resizable("enable");
-                        }
-                        else {
-                          $(".adjustable").resizable({
-                            handles: "e",
-                            containment: 'parent',
-                            start: function(event, ui) {
-                              originalW = ui.originalSize.width;
-                              newW = ui.size.width;
-                              $("#progress").html("Resizing Line").fadeIn();
-                              $("#lineResizing").show();
-                              $("#originalLine").html(originalW);
-                              $("#newLine").html(Math.round(100 * (newW / originalW)));
-                              $("#sidebar").fadeIn();
-                              thisLine = $(".ui-resizable-resizing");
-                            },
-                            resize: function(event, ui) {
-                              newW = ui.size.width;
-                              $("#newLine").html(Math.round(100 * (newW / originalW)));
-                            },
-                            stop: function(event, ui) {
-                              $("#progress").html("Line Resized - Saving...");
-                              var thisLineID = thisLine.attr("lineserverid");
-                              var thisLineW = parseFloat(thisLine.attr("linewidth")) * (newW / originalW);
-                              thisLine.attr("linewidth", thisLineW);
-                              updateLine(thisLine, false, true);
-                              $("#progress").html("Line Saved").delay(3000).fadeOut(1000);
-                              $("#lineResizing").delay(3000).fadeOut(1000);
-                            }
-                          });
-                        }
-                    }
-                    if (thisID == "addLines"){
-                        $("#addLines").addClass("active");
-                        $("#mergeLines").removeClass("active");
-                        $("#adjustLines").removeClass("active");
-                        $("#removeLine").removeClass("active");
-                        tpen.screen.isAddingLines = true;
-                        $("#imgTop").children(".line").addClass("parsing").removeClass("line");
-                        $(".parsing").bind({
-                            mouseenter: function(){
-                                applyRuler($(this));
-                            },
-                            mouseleave: function(){
-                                removeRuler($(this));
-                            },
-                            click: function(event){
-                                lineChange($(this), event, false);
-                            }
-                        });
-
-                    }
-                    if (thisID == "mergeLines" || thisID == "removeLine"){
-                        $("#mergeLines").addClass("active");
-                        $("#addLines").removeClass("active");
-                        $("#adjustLines").removeClass("active");
-                        $("#removeLine").removeClass("active");
-                        var deleteOnly = false;
-                        if(thisID === "removeLine"){
-                            deleteOnly = true;
-                        }
-                        //prep for column adjustment
-                        tpen.screen.isAddingLines = false;
-                        $(".parsing").bind({
-                            mouseenter: function(){
-                                applyRuler($(this), deleteOnly);
-                            },
-                            mouseleave: function(){
-                                removeRuler($(this), deleteOnly);
-                            },
-                            click: function(event){
-                                lineChange($(this), event, deleteOnly);
-                            }
-                        });
-                        $("#imgTop").children(".line").addClass("parsing").removeClass("line");
-                    }
-//                    if (thisID == "removeLine"){
-//                        console.log("The id of the btn was remove line");
-//                        $("#removeLine").addClass("active");
-//                        $("#addLines").removeClass("active");
-//                        $("#mergeLines").removeClass("active");
-//                        $("#adjustLines").removeClass("active");
-//                        //prep for column adjustment
-//                        tpen.screen.isAddingLines = false;
-//                        activateLastLineRemoval();
-//                        $(".parsing").bind({
-//                            mouseenter: function(){
-//                                applyRuler($(this));
-//                            },
-//                            mouseleave: function(){
-//                                removeRuler($(this));
-//                            },
-//                            click: function(event){
-//                                lineChange($(this), event, true);
-//                            }
-//                        });
-//                        $("#imgTop").children(".line").addClass("parsing").removeClass("line");
-//                    }
-                };
-            });
-
-
-        $(".accordion").children("span")
-        .append("<span class='fa fa-triangle-right pull-left'></span>")
-        .click(function(event){
-        $(document).unbind("mousemove");
-        $(document).unbind("mousedown");
-        $(document).unbind("mouseup");
-        $("#imgTop").css("cursor", "default");
-        $("#imgBottom").css("cursor", "default");
-        $(".parsing").unbind('mousemove');
-        $("#imgTop").children(".parsing").removeClass("adjustable");
-        $(".destroyPage").unbind();
-        $(".tpenButton").removeClass("ui-state-active");
-        $("#ruler1").hide();
-        $("#ruler2").hide();
-        var thisID = $(this).attr("id");
-        if (!$(this).next("div").is(":visible")) {
-            $(this).siblings("div").not($(this).next("div")).slideUp();
-            $(this).addClass("ui-state-active")
-                .children(".fa-triangle-right").switchClass("fa-triangle-right","fa-triangle-down").end()
-                .siblings("span").removeClass("ui-state-active")
-                .children(".fa-triangle-down").switchClass("fa-triangle-down","fa-triangle-right");
-            $(this).next("div").slideDown();
-        }
-
-
-
-        if (thisID === "reparseColumns") {
-                //load the adjustment tool and then show the reparsing instructions
-                $(".parsingColumn").removeClass("parsingColumnSelected");
-                var columnSet = $(".parsingColumn");
-                $("#reparseColumn").html('<span class="pull-left fa fa-refresh"></span>Submit '+columnSet.size()+' for Reparsing');
-                $("#reparseColumn").bind('click', function(){
-                    reparseColumns();
-                });
-            }
-        });
-
-         $("#brightnessSlider").slider({
-            orientation: "horizontal",
-            range: "min",
-            max: 200,
-            min: 0,
-            value: 100,
-            slide: imageSlider,
-            change: imageSlider
-        });
-        $("#contrastSlider").slider({
-            orientation: "horizontal",
-            range: "min",
-            max: 200,
-            min: 0,
-            value: 100,
-            slide: imageSlider,
-            change: imageSlider
-        });
-
-        $("#previewSplit")
-        .on("click",".previewText,.previewNotes",function(){edit(this);})
-        .on("click","#previewNotes",function(){
-            if($(this).hasClass("ui-state-active")){
-                $(".previewNotes").hide();
-                $("#previewNotes")
-                    .text("Show Notes")
-                    .removeClass("ui-state-active");
-            } else {
-                $(".previewNotes").show();
-                $("#previewNotes")
-                    .text("Hide Notes")
-                    .addClass("ui-state-active");
-            }
-            scrollToCurrentPage();
-        });
-
-        $(".helpContents").click(function(){
-          Help.select($(this));
-        });
-      $(".showMe").each(function(index){
-          $(this).append(function(){
-          var tip = $("<div/>");
-          var ref = $(this).attr("ref");
-          var content = "<span class='ui-state-default ui-corner-all lightUp' ref='"+index+"'>Show on Screen</span><span class='ui-state-default ui-corner-all video' ref='"+index+"'>Video Help</span>";
-          tip.addClass("helpDetail ui-corner-all").html(content);
-          return tip;
-          });
-  }).hover(function(){
-          var thisWidth = $(this).width()+10;
-          var tipWidth = 200;
-          var thisPos = ($(this).position().left > tipWidth/1.8) ? Math.min((tipWidth-thisWidth)/2,(Page.width()-tipWidth-5)) : $(this).position().left - 5;
-          var thisHeight = $(this).height();
-          //if (thisPos+thisWidth > tipWidth) thisPos = tipWidth-thisWidth;
-          $(this).find(".helpDetail").css({
-              left  : -thisPos+"px",
-              width : tipWidth+"px",
-              top   : thisHeight+"px"
-          }).show();
-      },function(){
-          $(".helpDetail").hide();
-      });
-      $(".lightUp").on("click",function(){
-          var refIndex = parseInt($(this).attr("ref"));
-          Help.lightUp(refIndex);
-      });
-      $(".video").on("click",function(){
-          var refIndex = parseInt($(this).attr("ref"));
-          Help.video(refIndex);
-      });
-      $(".glossary").append(function(){
-          var tip = $("<div/>");
-          var ref = $(this).attr("ref");
-          var content = $("#"+ref).add($("#"+ref).next("dd")).clone();
-          tip.addClass("gloss ui-state-default ui-corner-all").html(content);
-          return tip;
-      }).hover(function(){
-          var thisWidth = $(this).width()+10;
-          var thisPos = $(this).position().left-$(this).parent().position().left-5;
-          var thisHeight = $(this).height();
-          var tipWidth = Math.min($(this).parents(".helpColumn").width()-15,600);
-          if (thisPos+thisWidth > tipWidth) thisPos = tipWidth-thisWidth;
-          $(this).find(".gloss").css({
-              left  : -thisPos+"px",
-              width : tipWidth+"px",
-              top   : thisHeight+"px"
-          }).show();
-      },function(){
-          $(".gloss").hide();
-      }).click(function(){
-          var ref = $(this).attr("ref");
-          $("#helpContents").children(":last").click();
-          var def = $("#"+ref);
-          def.css('color','orangered');
-      });
-
-        $(".exitPage").click(function(event) {
-            var thisLink = $(this).attr("href");
-            event.preventDefault();
-            //If there is any ajax running and you try to leave a page, this will stop you
-            $("body").ajaxStart(function() {
-              $(this).addClass("ui-state-disabled");
-            }).ajaxStop(function() {
-                //When the ajax finishes, you can leave.
-              if (thisLink.indexOf("?") != -1)
-                thisLink += "&tool=" + tpen.screen.liveTool;
-                Data.saveTranscription(thisLink);
-            });
-            Data.saveTranscription(thisLink);
-//            if (leftovers != undefined)
-//              Linebreak.saveLeftovers(escape(leftovers));
-        });
-
-
-        $("#historyListing").on({
-            mouseenter: function(){
-                History.adjustBookmark($(this));
-                $(this).children(".historyOptions").fadeIn("fast");
-            },
-            mouseleave: function(){
-                $("#historyBookmark").css({"box-shadow":"box-shadow:0 0 30px black","border":"solid thin blue"}).add(".historyDims").empty();
-                $(this).children(".historyOptions").fadeOut("fast");
-            }
-        },".historyEntry");
-
-        $("#historyListing").on({
-            mouseenter: function(){
-                var dims = $(this).parents(".historyEntry").children(".historyRevert");
-                dims.html($(this).attr("title")).show();
-            },
-            mouseleave: function(){
-                $(this).parents(".historyEntry").children(".historyRevert").html("").hide();
-            },
-            click: function(){
-                History.revert(this);
-            }
-        },".historyOptions span");
-
-        $("#helpHeaders a").click(function(e){
-            // fix scrolling from maybe center div? #290 on github
-            e.preventDefault();
-            var targ = $(this).attr("href");
-            $(targ)[0].scrollIntoView();
-            $("#helpSplit").scrollTop(0);
-            $("#transcriptionCanvas").height("");
-            $("#transcriptionCanvas").height($(".transcriptionImage").height());
-        });
-        //moved out of setTPENObject function because these events do not get attached properly when fired in there.  
-        tpen.screen.abbrevLabelsAll = $("#abbrevLabels").clone();
-        $("#abbrevLabels").change(function(){
-            $("#abbrevImg").attr("src","//t-pen.org/images/cappelli/"+$(this).val());
-        });
-        $("#abbrevGroups").change(function(){
-            $("#abbrevSplit").addClass("ui-state-disabled");
-            $("#abbrevLabels option").remove();
-            tpen.screen.abbrevLabelsAll.children(".group-"+$("#abbrevGroups option:selected").val()).clone(true).appendTo("#abbrevLabels");
-            $("#abbrevLabels").removeAttr("disabled");
-            $("#abbrevSplit").removeClass("ui-state-disabled");
-            $("#abbrevLabels option:first").attr("selected",true);
-            $("#abbrevLabels").change();
-        });
-        
-    });
-
-    //UI effects for when a user decides to edit a line within the preview split tool.
-    function edit(line){
-        var focusLineID = $(line).siblings(".previewLineNumber").attr("lineserverid");
-        var transcriptionText = ($(line).hasClass("previewText")) ? ".theText" : ".notes";
-        var pair = $(".transcriptlet[lineserverid='"+focusLineID+"']").find(transcriptionText);
-        var transcriptlet = $(".transcriptlet[lineserverid='"+focusLineID+"']");
-        if ($(line).hasClass("currentPage")){
-          if (pair.parent().attr('id') !== tpen.screen.focusItem[1].attr('id')){
-              updatePresentation(transcriptlet);
-          }
-            line.focus();
-            $(line).keyup(function(){
-                //Data.makeUnsaved();
-                pair.val($(this).text());
-            });
-        }
-        else {
-            //console.log("NOt the current page.")
-        }
-    }
-
-    function toggleSelected($area, parsing){
-        var $unselectArea = $area.parent();
-        if(parsing){
-            $unselectArea.find(".selected").removeClass("selected"); //don't want to leave any of the others selected.
-            $unselectArea.find(".blockOpen").removeClass("blockOpen"); //don't want to leave any of the others selected.
-            $area.children("button").toggleClass("selected");
-            $(".icon-panel").find(".selected").removeClass("selected");
-        }
-        if($area.hasClass("selected")){
-            $area.removeClass("selected");
-        }
-        else{
-            $area.addClass("selected");
-        }
-    }
-
-    function toggleIcon(fromBtn){
-        toggleSelected($("img[from='"+fromBtn+"']"), true);
-    }
-
-</script>
-        <noscript>
-            <div id="noscript">
-                You are blocking scripts on this page. T-PEN uses 
-                <code>googleapis.com</code> and <code>javascript</code> 
-                for necessary functionality.
-            </div>
-            <div id="trexHead" style="display:block"></div>
-        </noscript>
-    </body>
 </html>
