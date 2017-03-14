@@ -84,9 +84,7 @@
         <p class="turnMsg">Please wait while we load the transcription interface.</p>
         <div class="turnLoader transLoader"><img src="images/loading2.gif" /></div>
     </div>
-    <div class="centerInterface">
         <div id="transcriptionTemplate">
-            <div id="parsingCover"></div>
             <div id="transcriptionCanvas">
                 <div id="noLineWarning">
                     <div id="noLineConfirmation">This canvas has no lines. You must be a leader for this project to create lines.
@@ -156,7 +154,6 @@
                 </div><br>
             </div>
         </div>
-    </div>
 
     <div id="genericIssue" class="ui-widget ui-corner-all ui-widget-content">
         <h2 class="ui-widget-header ui-corner-all">Data Error</h2>
@@ -268,7 +265,7 @@
                                                                           }
                                                                           $("#zoomat").text(Math.round(tpen.screen.zoomMultiplier * 10) / 10 + "x");
                                                                       }
-                                                                      else if (event.which == 18 || event.altKey && (tpen.screen.liveTool !== "parsing")) {
+                                                                      else if (event.which == 18 || event.altKey) {
                                                                           //console.log('ALT KEY');
                                                                           var lineForEditing = $(".activeLine");
                                                                           lineForEditing.resizable();
@@ -294,17 +291,14 @@
                                                                           $(".magnifyBtn").removeClass("selected");
                                                                           $("#moveImage").removeClass("selected");
                                                                           $(".transcriptlet").children("textarea").removeClass("imageMove").removeAttr("disabled");
-                                                                          if (tpen.screen.liveTool && tpen.screen.liveTool !== "none" && tpen.screen.liveTool !== "parsing") {
-                                                                              fullPage();
-                                                                          }
                                                                       }
-                                                                      else if (event.which === 13 && (tpen.screen.liveTool !== "parsing")) { //enter
+                                                                      else if (event.which === 13) { //enter
                                                                           if (event.shiftKey || event.altKey) return true;
                                                                           event.preventDefault();
                                                                           Linebreak.moveTextToNextBox();
                                                                           return nextTranscriptlet();
                                                                       }
-                                                                      else if (event.which === 9 && (tpen.screen.liveTool !== "parsing")) { // tab
+                                                                      else if (event.which === 9) { // tab
                                                                           //TAB hijack to keep behavior as expected
                                                                           var inForm = $(document.activeElement).is('input,textarea') && !$(document.activeElement).parent().is('.transcriptlet');
                                                                           if (event.which === 9 && !inForm) {
@@ -314,7 +308,7 @@
                                                                               else $("#nextLine").click();
                                                                           }
                                                                       }
-                                                                      else if (event.ctrlKey || event.metaKey && (tpen.screen.liveTool !== "parsing")) { //ctrl
+                                                                      else if (event.ctrlKey || event.metaKey) { //ctrl
                                                                           //This is also how you select a new tab in the browser.
                                                                           if (event.which >= 49 && event.which <= 57) { //insert a special char
                                                                               event.preventDefault();
