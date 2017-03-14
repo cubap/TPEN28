@@ -576,7 +576,7 @@ if (pid.indexOf("http://") >= 0 || pid.indexOf("https://") >= 0) {
         tpen.project.id = -1; //This means it is not a T-PEN project, but rather a manifest from another source.
         $.ajax({
             url: url,
-            headers:{"Access-Control-Allow-Origin":"anonymous"},
+            crossDomain: true,
             success: function(projectData){
                 if (projectData.sequences[0] !== undefined
                     && projectData.sequences[0].canvases !== undefined
