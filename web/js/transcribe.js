@@ -241,7 +241,7 @@ if (pid.indexOf("http://") >= 0 || pid.indexOf("https://") >= 0) {
                     transcriptionFolios = m.sequences[0].canvases;
                     scrubFolios();
                     var count = 1;
-                    $.each(transcriptionFolios, function(){
+                    $.each(transcriptionFolios, function(index){
                         $("#pageJump").append("<option folioNum='" + count
                             + "' class='folioJump' val='" + this.label + "'>"
                             + this.label + "</option>");
@@ -249,6 +249,12 @@ if (pid.indexOf("http://") >= 0 || pid.indexOf("https://") >= 0) {
                         if (this.otherContent){
                             if (this.otherContent.length > 0){
                                 // all's well
+                                $.each(transcriptionFolios[index].otherContent,function(jndex){
+                                    if(!transcriptionFolios[index].otherContent[jndex]['@id']){
+                                        console.warn("Missing `@id` on otherContent:", transcriptionFolios[index].otherContent[jndex]);
+                                        transcriptionFolios[index].otherContent[jndex]['@id']="temp_"+index+"_"+jndex;
+                                    }
+                                });
                             }
                             else {
                                 //otherContent was empty (IIIF says otherContent
@@ -257,6 +263,7 @@ if (pid.indexOf("http://") >= 0 || pid.indexOf("https://") >= 0) {
                             }
                         }
                         else {
+                            this.otherContent=[];
                             console.warn("`otherContent` does not exist in this Manifest.");
                         }
                     });
@@ -421,7 +428,7 @@ function drawLinesToCanvas(canvasObj, parsing, tool) {
     var lines = [];
 //    var currentFolio = parseInt(tpen.screen.currentFolio);
     if ((canvasObj.resources !== undefined && canvasObj.resources.length > 0)) {
-        //This situation means we got our lines from the SQL and there is no need to query the store.  This is TPEN28 1.0
+//This situation means we got our lines from the SQL and there is no need to query the store.  This is TPEN28 1.0
 //        for (var i = 0; i < canvasObj.resources.length; i++) {
 //            if (isJSON(canvasObj.resources[i])) {   // it is directly an annotation
 //                lines.push(canvasObj.resources[i]);
@@ -1392,13 +1399,6 @@ function pageJump(page, parsing){
                             tpen.screen.dereferencedLists[canvasIndex] = list;
                         if (list.resources) {
                             annos = list.resources;
-                            //Here is when we would set empty, but its best just to return the empty array.  Maybe get rid of "empty" check in this file.
-//                            for(var l=0; l<resources.length; l++){
-//                                var currentResource = resources[l];
-//                                if(currentResource.on.startsWith(canvas['@id'])){
-//                                     annos.push(currentResource);
-//                                 }
-//                            }
                         }
                         if(drawFlag){
                             drawLinesOnCanvas(annos, parsing, tpen.screen.liveTool);
@@ -1418,208 +1418,82 @@ function pageJump(page, parsing){
  *
  * */
 function updateLine(line, cleanup, updateList){
-
-return true;
-
-    var onCanvas = $("#transcriptionCanvas").attr("canvasid");
-    var currentAnnoList = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio], false, false, false);
+    var on_base = $("#transcriptionCanvas").attr("canvasid");
+    var annoList_resources = getList(tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio], false, false, false);
     var lineTop, lineLeft, lineWidth, lineHeight = 0;
     var ratio = originalCanvasWidth2 / originalCanvasHeight2;
-    //Can I use tpen.screen.originalCanvasHeight and Width?  IDK yet, untested.
+        //Can I use tpen.screen.originalCanvasHeight and Width?  IDK yet, untested.
 
-    lineTop = parseFloat(line.attr("linetop")) * 10;
-    lineLeft = parseFloat(line.attr("lineleft")) * (10 * ratio);
-    lineWidth = parseFloat(line.attr("linewidth")) * (10 * ratio);
-    lineHeight = parseFloat(line.attr("lineheight")) * 10;
-    //round up.
-    lineTop = Math.round(lineTop, 0);
-    lineLeft = Math.round(lineLeft, 0);
-    lineWidth = Math.round(lineWidth, 0);
-    lineHeight = Math.round(lineHeight, 0);
-    var lineString = lineLeft + "," + lineTop + "," + lineWidth + "," + lineHeight;
+        lineTop = parseFloat(line.attr("linetop")) * 10;
+        lineLeft = parseFloat(line.attr("lineleft")) * (10 * ratio);
+        lineWidth = parseFloat(line.attr("linewidth")) * (10 * ratio);
+        lineHeight = parseFloat(line.attr("lineheight")) * 10;
+        //round up.
+        lineTop = Math.round(lineTop, 0);
+        lineLeft = Math.round(lineLeft, 0);
+        lineWidth = Math.round(lineWidth, 0);
+        lineHeight = Math.round(lineHeight, 0);
+    var xywh_values = lineLeft + "," + lineTop + "," + lineWidth + "," + lineHeight;
     var currentLineServerID = line.attr('lineserverid');
-    var currentLineText = $(line).find(".theText").val();
-    var currentLineNotes = $(line).find(".notes").val();
-    var currentLineTextAttr = unescape(line.attr("data-answer"));
-    var currentLineNotesAttr = unescape(line.find(".notes").attr("data-answer"));
-    var params = new Array({name:'submitted',value:true},{name:'folio',value:tpen.project.folios[tpen.screen.currentFolio].folioNumber},{name:'projectID',value:tpen.project.id});
-    var params2 = new Array({name:'submitted',value:true},{name:'projectID',value:tpen.project.id});
-    var updateContent = false;
-    var updatePositions = false;
-    if(tpen.screen.liveTool === "parsing"){
-        //OR it was from bump line in the trasncription interface.  How do I detect that?  This is overruled below until we figure that out.
-        updatePositions = true;
-        updateContent = false;
-        currentLineText = currentLineTextAttr = "";
-        currentLineNotes = currentLineNotesAttr = "";
-    }
-//    var currentAnnoListID = tpen.screen.currentAnnoListID;
-    var dbLine = {
+    var text = $(line).find(".theText").val();
+    var notes = $(line).find(".notes").val();
+
+    var oaAnnotation = {
         "@id" : currentLineServerID,
-        "tpen_line_id" :  currentLineServerID,
         "@type" : "oa:Annotation",
-        "motivation" : "oad:transcribing",
+        "motivation" : ["sc:painting","rr:transcribing","rr:unpublished"],
         "resource" : {
             "@type" : "cnt:ContentAsText",
-            "cnt:chars" : currentLineText
+            "cnt:chars" : text
         },
-        "on" : onCanvas + "#xywh=" + lineString,
-        "otherContent" : [],
-        "forProject": tpen.manifest['@id'],
-        "_tpen_note" : currentLineNotes,
-//        "testing":"TPEN28"
+        "on" : on_base + "#xywh=" + xywh_values,
+        "_tpen" : {"forProject": tpen.manifest['@id'],notes:notes,line_id:currentLineServerID},
+        "_rerum": {sandbox:true}
     };
-//    if (!currentAnnoListID){ //BH 12/21/16 we need to skip this check now since we don't have a anno list ID anymore
-//        if(!currentAnnoList){
-//            throw new Error("No annotation list found.");
-//        } else if (typeof currentAnnoList==="string"){
-//            // unlikely, but just in case
-//            $.getJSON(currentAnnoList,function(list){
-//                tpen.screen.currentAnnoList = tpen.manifest.sequences[0].canvases[tpen.screen.currentFolio].otherContent[tpen.screen.currentAnnoList] = list;
-//                return updateLine(line, cleanup, updateList);
-//            }).fail(function(err){
-//                throw err;
-//            });
-//        } else if ($.isArray(currentAnnoList.resources)){
-//            throw new Error("Everything looks good, but it didn't work.");
-//        } else {
-//            throw new Error("Annotation List was not recognized.");
-//        }
-//    }
-//    else if (currentAnnoListID){
-        var lineID = (line != null) ? $(line).attr("lineserverid") : -1;
-        lineID = parseInt(lineID.replace("line/", "")); //TODO check this in the future to make sure you are getting the lineID and not some string here.
-        if (parseInt(lineID)>0 || $(line).attr("id")=="dummy"){
-            params.push(
-                {name:"updatey",value:lineTop},
-                {name:"updatex",value:lineLeft},
-                {name:"updatewidth",value:lineWidth},
-                {name:"updateheight",value:lineHeight},
-                {name:"update",value:lineID}
-            );
-            updatePositions = true; //This will always be true, which we want right now.  Up at the top there is a check for it, but I need the OR to make it happen.
-        }
-        else{
-            updatePositions = false;
-        }
-
-        if(tpen.screen.liveTool !== "parsing"){
-            //Only update positions if parsing is active, it is the only place to change position information at this point. alt+ arrow has been removed from interface.
-            updatePositions = false;
-        }
-        //isDestroyingLine = false;
-//        if(currentLineServerID.startsWith("http")){ //@cubap FIXME: do we need this check anymore?
-        var url = "updateLinePositions"; //updateAnnoList
-        var url2 = "updateLineServlet";
-//            var payload = { // Just send what we expect to update
-//                    content : JSON.stringify({
-//                    "@id" : dbLine['@id'],			// URI to find it in the repo
-//                    "resource" : dbLine.resource,	// the transcription content
-//                    "on" : dbLine.on,
-//                    "_tpen_note": dbLine._tpen_note// parsing update of xywh=
-//            	})
- //           }
-            //var url1 = "updateAnnoList";
-            clearTimeout(typingTimer);
-            for(var i=0  ;i < currentAnnoList.length; i++){
-                if(currentAnnoList[i]["@id"] === dbLine['@id']){
-                    currentAnnoList[i].on = dbLine.on;
-                    currentAnnoList[i].resource = dbLine.resource;
-                    currentAnnoList[i]._tpen_note = dbLine._tpen_note; //@cubap FIXME:  How do we handle notes now?
-                }
-                if(i===currentAnnoList.length -1){
-                    tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources = currentAnnoList;
-//                    var paramObj1 = {"@id":tpen.screen.currentAnnoListID, "resources": currentAnnoList};
-//                    var params1 = {"content":JSON.stringify(paramObj1)};
-//                    $.post(url1, params1, function(data){
-//                    });
+    clearTimeout(typingTimer);
+    var saveAndUpdate = function(anno,index,idOnly){
+        saveLine(anno,function(res){
+                        console.log(res);
+                        // res is object, but not header, so .done
+                    }).done(function(res){
+                        // res is jqXHR now, location header is the updated or created RERUM URI
+                        var newID = res.getHeader("Location");
+                        anno['@id'] = newID;
+                        tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources[index] =
+                        ( idOnly ) ? newID : anno;
+                });
+    };
+            for(var i=0  ;i < annoList_resources.length; i++){
+                if(annoList_resources[i]["@id"] === oaAnnotation['@id']
+                || annoList_resources[i].tpen_line_id === oaAnnotation._tpen.line_id ){
+                    // This is the match.
+                    saveAndUpdate(oaAnnotation,i);
+                    break;
+                } else if (annoList_resources[i] === oaAnnotation['@id']
+                || annoList_resources[i] === oaAnnotation._tpen.line_id ){
+                    // This is a reference match.
+                    saveAndUpdate(oaAnnotation,i,true);
+                    break;
                 }
             }
-
-            if(currentLineText === currentLineTextAttr && currentLineNotes === currentLineNotesAttr){
-                //This line's text has not changed, and neither does the notes
-                updateContent = false;
-                $("#saveReport")
-                .stop(true,true).animate({"color":"red"}, 400)
-                .append("<div class='noChange'>No changes made</div>")//
-                .animate({"color":"#618797"}, 1600,function(){$("#saveReport").find(".noChange").remove();});
-                $("#saveReport").find(".nochanges").show().fadeOut(2000);
-            }
-            else{ //something about the line text or note text has changed.
-                params2.push({name:"comment", value:currentLineNotes});
-                params2.push({name:"text", value:currentLineText});
-                params2.push({name:"line",value:lineID});
-                updateContent = true;
-                var columnMark = "Column&nbsp;"+line.attr("col")+"&nbsp;Line&nbsp;"+line.attr("collinenum");
-                var date=new Date();
-                $("#saveReport")
-                .stop(true,true).animate({"color":"green"}, 400)
-                .append("<div class='saveLog'>"+columnMark + '&nbsp;saved&nbsp;at&nbsp;'+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds()+"</div>")//+", "+Data.dateFormat(date.getDate())+" "+month[date.getMonth()]+" "+date.getFullYear())
-                .animate({"color":"#618797"}, 600);
-               
-            }
-            line.attr("data-answer", currentLineText);
-            line.find(".notes").attr("data-answer", currentLineNotes);
-            //FIXME: REST says this should be PUT
-            if(updatePositions && updateContent){
-                
-            }
-            else{
-                if(updatePositions){
-                    $.post(url,params,function(){
-                        console.log(line.attr("linewidth"));
-                        line.attr("hasError",null);
-                        markLineSaved(line);
-                        $("#parsingCover").hide();
-                        if(!updateContent)History.prependEntry(lineID);
-                        // success
-                    }).fail(function(err){
-                        line.attr("hasError","Saving Failed "+err.status);
-                        if(err.status === 403){
-                            var theURL = window.location.href;
-                            return window.location.href = "index.jsp?ref="+encodeURIComponent(theURL);
-                        }
-                        else{
-                            $(".trexHead").show();
-                            $("#genericIssue").show(1000);
-                        }
-                        throw err;
-                    });
-                }
-                if(updateContent){
-                    $.post(url2,params2,function(){
-                        line.attr("hasError",null);
-                        markLineSaved(line);
-                        $("#parsingCover").hide();
-                        History.prependEntry(lineID);
-                        // success
-                    }).fail(function(err){
-                        line.attr("hasError","Saving Failed "+err.status);
-                        if(err.status === 403){
-                            var theURL = window.location.href;
-                            return window.location.href = "index.jsp?ref="+encodeURIComponent(theURL);
-                        }
-                        else{
-                            $(".trexHead").show();
-                            $("#genericIssue").show(1000);
-                        }
-                        throw err;
-                    });
-                }
-            
-//        } else {
-//            throw new Error("No good. The ID could not be dereferenced. Maybe this is a new annotation?");
-//        }
-        //I am not sure if cleanup is ever true
-        if (cleanup) cleanupTranscriptlets(true);
-        updateClosingTags();
-    }
-    if(!updateContent && !updatePositions){
-        markLineSaved(line);
+}
+function saveReportMessage(msg,isError){
+    var log = $("#saveReport");
+    log.stop(true,true);
+    var report = $("<div>").html(msg);
+    if(isError){
+        report.addClass('noChange');
+        log.append(report).animate({"color":"#618797"}, 1600,function(){$("#saveReport").find(".noChange").remove();});
+    } else {
+        report.addClass('saveLog');
+        log.append(report).animate({"color":"#618797"}, 600);
     }
 }
 
-
+function saveLine(anno, callback){
+    alert("TODO: SAVE LINE!");
+    // TODO: Connect to Rerum-cloud
+}
 
 function saveNewLine(lineBefore, newLine){
     var projID = tpen.project.id;
