@@ -62,6 +62,7 @@ var tpen = {
         authorizedManuscripts: []
     }
 };
+
 var dragHelper = "<div id='dragHelper'></div>";
 var typingTimer;
 
