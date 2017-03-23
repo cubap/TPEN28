@@ -1457,8 +1457,13 @@ function updateLine(line, cleanup, updateList){
                         console.log(res);
                         // res is object, but not header, so .done
                     }).done(function(res){
+                        var newID;
+                        try{
                         // res is jqXHR now, location header is the updated or created RERUM URI
-                        var newID = res.getHeader("Location");
+                        newID = res.getHeader("Location");
+                        } catch (err) {
+                            newID = "ERROR"+err.status+Date.now();
+                        }
                         anno['@id'] = newID;
                         tpen.screen.dereferencedLists[tpen.screen.currentFolio].resources[index] =
                         ( idOnly ) ? newID : anno;
@@ -1492,8 +1497,10 @@ function saveReportMessage(msg,isError){
 }
 
 function saveLine(anno, callback){
-    alert("TODO: SAVE LINE!");
+    console.log("TODO: SAVE LINE!");
     // TODO: Connect to Rerum-cloud
+    var deferred = $.Deferred();
+    return deferred.resolve(callback(anno)||anno);
 }
 
 function saveNewLine(lineBefore, newLine){
