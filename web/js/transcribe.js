@@ -1499,8 +1499,19 @@ function saveReportMessage(msg,isError){
 function saveLine(anno, callback){
     console.log("TODO: SAVE LINE!");
     // TODO: Connect to Rerum-cloud
-    var deferred = $.Deferred();
-    return deferred.resolve(callback(anno)||anno);
+    var url = "https://rerum-cloud-cubap.c9users.io";
+    var api = "/res/line";
+    if(anno['@id']&&anno['@id'].indexOf('://'>-1)){
+        var aid = anno['@id'].substr(anno['@id'].lastIndexOf("/")+1);
+        // id in the store already
+        return $.ajax({
+            url:url+api+"/"+aid,
+            data:anno,
+            method:'PUT'});
+    } else {
+        // new line
+        return $.post(url+api,anno);
+    }
 }
 
 function saveNewLine(lineBefore, newLine){
