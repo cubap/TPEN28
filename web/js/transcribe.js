@@ -401,6 +401,26 @@ function loadTranscriptionCanvas(canvasObj, parsing, tool){
     }
 }
 
+function loadAnnotations(listURI){
+    $.get(listURI,function(annos){
+        // TODO: Wellcome fix
+    });
+}
+
+function loadCanvasAnnotations(canvas){
+    if(!canvas.otherResources){
+        throw new Error("No otherResources on this canvas");
+    }
+    if(typeof(canvas.otherContent[0]) === "string"){
+        // string id only
+        loadAnnotations(canvas.otherContent[0]);
+    }
+    if(!canvas.otherContent[0].resources && canvas.otherContent[0]['@id']){
+        // referred by id only
+        loadAnnotations(canvas.otherContent[0]['@id']);
+    }
+};
+
 function updatePageLabels(pageTitle){
     $("#trimPage").html(pageTitle);
     $("#trimPage").attr("title", pageTitle);
